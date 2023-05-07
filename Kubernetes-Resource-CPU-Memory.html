@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Kubernetes-Resource-CPU-Memory:::warning :::spoiler 目錄 [TOC] ::: Assigning Pods to Nodes1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes-Resource-CPU-Memory">
+<meta property="og:url" content="http://example.com/Kubernetes-Resource-CPU-Memory.html">
+<meta property="og:site_name" content="Antony 的學習筆記">
+<meta property="og:description" content="Kubernetes-Resource-CPU-Memory:::warning :::spoiler 目錄 [TOC] ::: Assigning Pods to Nodes1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-17T21:14:58.000Z">
+<meta property="article:modified_time" content="2023-05-07T08:15:42.340Z">
+<meta property="article:author" content="Antony Cehn">
+<meta property="article:tag" content="系統工程">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/Kubernetes-Resource-CPU-Memory.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Kubernetes-Resource-CPU-Memory | Antony 的學習筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Antony 的學習筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">這個網站將紀錄持續記錄我學習到各種知識的筆記</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/Kubernetes-Resource-CPU-Memory.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Antony Cehn">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Antony 的學習筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kubernetes-Resource-CPU-Memory
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-09-18 05:14:58" itemprop="dateCreated datePublished" datetime="2022-09-18T05:14:58+08:00">2022-09-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-05-07 16:15:42" itemprop="dateModified" datetime="2023-05-07T16:15:42+08:00">2023-05-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Kubernetes-Resource-CPU-Memory"><a href="#Kubernetes-Resource-CPU-Memory" class="headerlink" title="Kubernetes-Resource-CPU-Memory"></a>Kubernetes-Resource-CPU-Memory</h1><p>:::warning</p>
+<p>:::spoiler 目錄</p>
+<p>[TOC]</p>
+<p>:::</p>
+<h2 id="Assigning-Pods-to-Nodes"><a href="#Assigning-Pods-to-Nodes" class="headerlink" title="Assigning Pods to Nodes"></a>Assigning Pods to Nodes</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"># 檢視所有 node 的 labels</span><br><span class="line">$ kubectl get nodes --show-labels</span><br><span class="line"></span><br><span class="line"># 編輯 nodeselect 的 yaml 檔</span><br><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: p1</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: c1</span><br><span class="line">    image: quay.io/cloudwalker/busybox</span><br><span class="line">    imagePullPolicy: Never</span><br><span class="line">    tty: true</span><br><span class="line">  nodeSelector:</span><br><span class="line">    kubernetes.io/hostname : m1 &#x27;&gt; ~/wulin/yaml/nodeselect.yaml </span><br><span class="line">    </span><br><span class="line"># apply 它</span><br><span class="line">$ kubectl apply -f  ~/wulin/yaml/nodeselect.yaml </span><br><span class="line">pod/p1 created</span><br><span class="line"></span><br><span class="line"># 檢查是否跑在 m1 這台指定的 node 上</span><br><span class="line">$ kubectl get pods -o wide</span><br><span class="line">NAME   READY   STATUS    RESTARTS   AGE   IP           NODE    NOMINATED NODE   READINESS GATES</span><br><span class="line">p1     1/1     Running   0          35s   10.233.2.2           m1   &lt;none&gt;           &lt;none&gt;</span><br><span class="line"></span><br><span class="line"># 刪除 p1 pod</span><br><span class="line">$ kubectl delete pods p1</span><br><span class="line">pod &quot;p1&quot; deleted</span><br><span class="line"></span><br><span class="line"># 編輯 depnode 的 yaml 檔</span><br><span class="line">$ nano ~/wulin/yaml/depnode.yaml</span><br><span class="line">apiVersion: apps/v1</span><br><span class="line">kind: Deployment</span><br><span class="line">metadata:</span><br><span class="line">  name: depnode</span><br><span class="line">  labels:</span><br><span class="line">    app: depnode</span><br><span class="line">spec:</span><br><span class="line">  replicas: 4</span><br><span class="line">  selector:</span><br><span class="line">    matchLabels:</span><br><span class="line">      app: depnode</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      labels:</span><br><span class="line">        app: depnode</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - name: alp</span><br><span class="line">        image: quay.io/cloudwalker/alpine</span><br><span class="line">        tty: true</span><br><span class="line"></span><br><span class="line">$ ka  -f  ~/wulin/yaml/depnode.yaml</span><br><span class="line"></span><br><span class="line">$ kg pods -o wide --selector app=depnode</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE    IP            NODE   NOMINATED NODE   READINESS GATES</span><br><span class="line">depnode-7789fd7db7-2h6t5   1/1     Running   0       5m4s   10.244.2.12   w2     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">depnode-7789fd7db7-2vc6s   1/1     Running   0       5m4s   10.244.0.10   m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">depnode-7789fd7db7-vl6g2   1/1     Running   0        5m4s   10.244.1.11   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">depnode-7789fd7db7-z4zxr   1/1     Running   0        5m4s   10.244.1.12   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line"></span><br><span class="line">$ kd -f ~/wulin/yaml/depnode.yaml</span><br><span class="line"></span><br><span class="line">$ nano ~/wulin/yaml/depnode.yaml</span><br><span class="line">apiVersion: apps/v1</span><br><span class="line">kind: Deployment</span><br><span class="line">.......</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - name: alp</span><br><span class="line">        image: quay.io/cloudwalker/alpine</span><br><span class="line">        tty: true</span><br><span class="line">      affinity:</span><br><span class="line">        podAntiAffinity:</span><br><span class="line">          requiredDuringSchedulingIgnoredDuringExecution:</span><br><span class="line">          - labelSelector:</span><br><span class="line">              matchExpressions:</span><br><span class="line">              - key: app</span><br><span class="line">                operator: In</span><br><span class="line">                values:</span><br><span class="line">                - depnode</span><br><span class="line">            topologyKey: kubernetes.io/hostname</span><br><span class="line"></span><br><span class="line">$ ka  -f  ~/wulin/yaml/depnode.yaml</span><br><span class="line"></span><br><span class="line">$ kg pods -o wide --selector app=depnode</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES</span><br><span class="line">depnode-7c65d66984-6cplq   1/1     Running   0          25s   10.244.2.13   w2       &lt;none&gt;           &lt;none&gt;</span><br><span class="line">depnode-7c65d66984-hgbs5   1/1     Running   0          25s   10.244.0.11   m1       &lt;none&gt;           &lt;none&gt;</span><br><span class="line">depnode-7c65d66984-pb9f9   0/1     Pending   0          25s   &lt;none&gt;        &lt;none&gt;   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">depnode-7c65d66984-qj7g4   1/1     Running   0          25s   10.244.1.13   w1       &lt;none&gt;           &lt;none&gt;</span><br><span class="line"></span><br><span class="line">$ kd -f ~/wulin/yaml/depnode.yaml</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="Metrics-Server"><a href="#Metrics-Server" class="headerlink" title="Metrics Server"></a>Metrics Server</h1><p><strong>安裝 Metrics Server</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml</span><br><span class="line"></span><br><span class="line">$ nano components.yaml</span><br><span class="line">..........</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - args:</span><br><span class="line">        - --cert-dir=/tmp</span><br><span class="line">        - --secure-port=4443</span><br><span class="line">        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname</span><br><span class="line">        - --kubelet-use-node-status-port</span><br><span class="line">        - --metric-resolution=15s</span><br><span class="line">        - --kubelet-insecure-tls</span><br><span class="line">        image: k8s.gcr.io/metrics-server/metrics-server:v0.6.1</span><br><span class="line">        imagePullPolicy: IfNotPresent</span><br><span class="line"></span><br><span class="line">$ kubectl apply -f components.yaml</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>- --kubelet-insecure-tls</code> ，所有 K8S 在網路上運作傳輸的封包和資料都會進行加密</li>
+</ul>
+<p>檢視 Worker Node 資源使用狀態</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl top nodes</span><br><span class="line">NAME   CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%</span><br><span class="line">m1       84m             4%        603Mi                7%</span><br><span class="line">w1       26m             1%        496Mi                6%</span><br><span class="line">w2       27m             1%        459Mi                5%</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>CPU 的單位 : milliCPU</li>
+<li>1 core &#x3D; 1000m</li>
+<li>m1 node 比較忙的原因是因為它裡面跑的 pod 都是在做系統維運的</li>
+</ul>
+<p>檢視 pod 的資源使用狀態</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl top pods -n bobo</span><br><span class="line">NAME         CPU(cores)   MEMORY(bytes)</span><br><span class="line">bobo.fbs     0m           3Mi</span><br><span class="line">bobo.goweb   1m           1Mi</span><br><span class="line">bobo.mysql   7m           289Mi</span><br></pre></td></tr></table></figure>
+
+<h3 id="Rsource-Requests-amp-Limits"><a href="#Rsource-Requests-amp-Limits" class="headerlink" title="Rsource Requests &amp; Limits"></a>Rsource Requests &amp; Limits</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: podres</span><br><span class="line">  namespace: default</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: podres</span><br><span class="line">    image: quay.io/cloudwalker/alpine</span><br><span class="line">    command: [&quot;/usr/bin/yes&quot;]</span><br><span class="line">    resources:</span><br><span class="line">       requests:</span><br><span class="line">          cpu: 100m</span><br><span class="line">          memory: 640M</span><br><span class="line">       limits:</span><br><span class="line">          cpu: 500m&#x27;&gt; ~/wulin/yaml/resource.yaml </span><br><span class="line"></span><br><span class="line">$ kubectl apply -f  ~/wulin/yaml/resource.yaml</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="Horizontal-Pod-Autoscaler"><a href="#Horizontal-Pod-Autoscaler" class="headerlink" title="Horizontal Pod Autoscaler"></a>Horizontal Pod Autoscaler</h1><p>The Horizontal Pod Autoscaler is implemented as a control loop, with a period controlled by the controller manager’s –horizontal-pod-autoscaler-sync-period flag (with a default value of 15 seconds)</p>
+<ul>
+<li>HPA 一定會透過 Metrics Server 來得到 Deployment 的 pod 現在使用資源的狀態</li>
+</ul>
+<p>建立 Horizontal Pod Autoscaler</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir ~/wulin/hpa; cd ~/wulin/hpa</span><br><span class="line"></span><br><span class="line">$ nano hpa-dep.yaml</span><br></pre></td></tr></table></figure>
+
+<p>編輯 yaml 檔</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">hpa-dep</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">hpa.pod</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">hpa.pod</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">alp</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">quay.io/cloudwalker/alpine</span></span><br><span class="line">        <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">        <span class="attr">tty:</span> <span class="literal">true</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">limits:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>單位 m 指的是 milli-cores，每 1000m &#x3D; 1 vCore</li>
+<li>設定可以用 m 或分數，例如：</li>
+<li>設定 0.5 &#x3D; 500m</li>
+<li>設定 300m &#x3D; 0.3</li>
+<li>這裡設定的 1 代表的是 1000m，代表 1 個 pod 只能使用一顆 vCore 的運算資源</li>
+</ul>
+<p>編輯 yaml 檔</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nano hpa-sp.yml </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">autoscaling/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">HorizontalPodAutoscaler</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">hpa-sp</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">scaleTargetRef:</span></span><br><span class="line">    <span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line">    <span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">hpa-dep</span></span><br><span class="line">  <span class="attr">minReplicas:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">maxReplicas:</span> <span class="number">5</span></span><br><span class="line">  <span class="attr">targetCPUUtilizationPercentage:</span> <span class="number">30</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>scaleTargetRef:</code>，要監控的對象</li>
+<li><code>minReplicas: 2</code>，擴充的 pod 最少會有兩個</li>
+<li><code>maxReplicas: 5</code>，擴充的 pod 最多只能有五個</li>
+<li><code>targetCPUUtilizationPercentage: 30</code>，設定 30% 代表 HPA 將會維持 Pod 的平均 CPU 使用率為 30 %，只要超出 30%，即會自動擴展</li>
+</ul>
+<p><strong>建立與檢測 Horizontal Pod Autoscaler</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl apply -f  .</span><br><span class="line">deployment.apps/hpa-dep created</span><br><span class="line">horizontalpodautoscaler.autoscaling/hpa-sp created</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE</span><br><span class="line">hpa-dep-765c997fc8-6vbmd   1/1     Running   0          22s</span><br><span class="line">hpa-dep-765c997fc8-g9kgd   1/1     Running   0          22</span><br><span class="line"></span><br><span class="line">$ kubectl get hpa --watch</span><br><span class="line">NAME     REFERENCE            TARGETS   MINPODS   MAXPODS   REPLICAS   AGE</span><br><span class="line">hpa-sp   Deployment/hpa-dep   0%/30%    2         5         2          4m47s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   0%/30%    2         5         2          5m16s</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 開啟新的 命令提示字元 視窗</span><br><span class="line">$ ssh bigred@&lt;m1 node ip&gt;</span><br><span class="line"></span><br><span class="line">$ kg pod</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE</span><br><span class="line">hpa-dep-765c997fc8-6vbmd   1/1     Running   0          7m21s</span><br><span class="line">hpa-dep-765c997fc8-g9kgd   1/1     Running   0          7m21s</span><br><span class="line"></span><br><span class="line">$ kubectl exec hpa-dep-765c997fc8-6vbmd -- timeout 240 yes &gt;/dev/null &amp;</span><br><span class="line">$ kubectl exec hpa-dep-765c997fc8-g9kgd -- timeout 240 yes &gt;/dev/null &amp;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>利用 <code>yes</code> 命令會霸佔 CPU 的特性，來測試 HPA</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get hpa --watch</span><br><span class="line">NAME     REFERENCE            TARGETS   MINPODS   MAXPODS   REPLICAS   AGE</span><br><span class="line">hpa-sp   Deployment/hpa-dep   0%/30%    2         5         2          25m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   33%/30%   2         5         2          25m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   56%/30%   2         5         3          26m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   56%/30%   2         5         4          26m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   55%/30%   2         5         4          26m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   56%/30%   2         5         4          27m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   56%/30%   2         5         4          27m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   56%/30%   2         5         4          27m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   57%/30%   2         5         4          27m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   57%/30%   2         5         4          28m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   56%/30%   2         5         4          28m</span><br><span class="line">hpa-sp   Deployment/hpa-dep   57%/30%   2         5         4          28m</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可以看到 <code>REPLICAS</code> 擴充為 4</li>
+</ul>
+<p>檢查 pod 有沒有 running</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE</span><br><span class="line">hpa-dep-765c997fc8-6vbmd   1/1     Running   0          26m</span><br><span class="line">hpa-dep-765c997fc8-7rdcm   0/1     Pending   0          38s</span><br><span class="line">hpa-dep-765c997fc8-g9kgd   1/1     Running   0          26m</span><br><span class="line">hpa-dep-765c997fc8-wvvm2   0/1     Pending   0          23s</span><br></pre></td></tr></table></figure>
+
+<p>為何擴充的 pod 都是 pending ?<br>用 <code>kubectl describe</code> 看一下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl describe pods hpa-dep-765c997fc8-7rdcm</span><br><span class="line">Name:           hpa-dep-765c997fc8-7rdcm</span><br><span class="line">...</span><br><span class="line">Events:</span><br><span class="line">  Type     Reason            Age   From               Message</span><br><span class="line">  ----     ------            ----  ----               -------</span><br><span class="line">  Warning  FailedScheduling  53s   default-scheduler  0/5 nodes are available: 2 Insufficient cpu, 3 node(s) had untolerated taint &#123;node-role.kubernetes.io/master: &#125;. preemption: 0/5 nodes are available: 2 No preemption victims found for incoming pod, 3 Preemption is not helpful for scheduling.</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>錯誤訊息說明，已經沒有 node 上有足夠的 CPU 讓 pod run，因為我們是用 VM 來 run K8S ，設定給 VM 用的 CPU 只有 2 Core</li>
+<li>雖然 K8S 的 HPA 能自動幫我們橫向擴充 pod ，但是硬體資源 (CPU) 不夠力，擴充出來的 pod 也沒辦法 run，所以要特別注意。</li>
+</ul>
+<p>可以根據 <code>kubectl top</code>來檢視 node 使用資源狀態</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ k top nodes</span><br><span class="line">NAME   CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%</span><br><span class="line">m1     1102m        55%    869Mi           11%</span><br><span class="line">m2     270m         13%    803Mi           10%</span><br><span class="line">m3     240m         12%    695Mi           8%</span><br><span class="line">w1     1372m        68%    265Mi           3%</span><br><span class="line">w2     1396m        69%    644Mi           8%</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可以看到 w1 和 w2 node 的 CPU 使用率都飆到將近 70 % ，已經沒有足夠的運算資源，再讓多的 pod run 了，所以才會顯示 pending 的狀態</li>
+</ul>
+<p>刪除 deployment 和 hpa</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kd -f hpa-dep.yaml</span><br><span class="line">$ kd -f hpa-sp.yml</span><br></pre></td></tr></table></figure>
+
+<p>修改 pod 可以使用的 CPU 運作資源</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nano hpa-dep.yaml</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="string">...</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="string">...</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">limits:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">400m</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>將最後的 CPU 設成 400m</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nano hpa-sp.yml</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="string">...</span></span><br><span class="line">  <span class="attr">targetCPUUtilizationPercentage:</span> <span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>將 <code>targetCPUUtilizationPercentage</code> 的值改成 10</li>
+</ul>
+<p>再次產生物件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ka -f .</span><br><span class="line">deployment.apps/hpa-dep created</span><br><span class="line">horizontalpodautoscaler.autoscaling/hpa-sp created</span><br><span class="line"></span><br><span class="line">$ kg hpa --watch</span><br><span class="line">NAME     REFERENCE            TARGETS   MINPODS   MAXPODS   REPLICAS   AGE</span><br><span class="line">hpa-sp   Deployment/hpa-dep   0%/10%    2         5         2          47s</span><br></pre></td></tr></table></figure>
+
+<p>在另一個終端機，檢視</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ kg pod</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE</span><br><span class="line">hpa-dep-6f5bd9dd57-ggs9b   1/1     Running   0          56s</span><br><span class="line">hpa-dep-6f5bd9dd57-kmxmb   1/1     Running   0          56s</span><br></pre></td></tr></table></figure>
+
+<p>讓 pod 飆 yes</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl exec hpa-dep-6f5bd9dd57-ggs9b -- timeout 240 yes &gt;/dev/null &amp;</span><br><span class="line">$ kubectl exec hpa-dep-6f5bd9dd57-kmxmb -- timeout 240 yes &gt;/dev/null &amp;</span><br></pre></td></tr></table></figure>
+
+<p>回原來的終端機</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ kg hpa --watch</span><br><span class="line">NAME     REFERENCE            TARGETS   MINPODS   MAXPODS   REPLICAS   AGE</span><br><span class="line">hpa-sp   Deployment/hpa-dep   0%/10%    2         5         2          47s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   3%/10%    2         5         2          3m15s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   69%/10%   2         5         2          3m31s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   100%/10%   2         5         4          3m46s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   100%/10%   2         5         5          4m1s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   50%/10%    2         5         5          4m16s</span><br><span class="line">hpa-sp   Deployment/hpa-dep   40%/10%    2         5         5          4m31s</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可以看到 <code>REPLICAS</code> 擴充為 4</li>
+</ul>
+<p>再到另一個終端機，檢視 pod 有無 runninf</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ kg po -o wide</span><br><span class="line">NAME                       READY   STATUS    RESTARTS   AGE     IP           NODE   NOMINATED NODE   READINESS GATES</span><br><span class="line">hpa-dep-6f5bd9dd57-7tkdp   1/1     Running   0          24s     10.244.3.7   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">hpa-dep-6f5bd9dd57-cntd5   1/1     Running   0          9s      10.244.3.8   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">hpa-dep-6f5bd9dd57-ggs9b   1/1     Running   0          3m55s   10.244.4.6   w2     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">hpa-dep-6f5bd9dd57-kmxmb   1/1     Running   0          3m55s   10.244.3.6   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">hpa-dep-6f5bd9dd57-qlgr6   1/1     Running   0          24s     10.244.4.7   w2     &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通通健康的在跑，因為我們設定一個 pod 只能 run 400m ，且目前單一 node 總共有 2000m 可以用，所以當然可以讓擴充出來的 pod 快樂的 running</li>
+</ul>
+<p>檢視 node 使用運作資源</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ k top nodes</span><br><span class="line">NAME   CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%</span><br><span class="line">m1     867m         43%    897Mi           11%</span><br><span class="line">m2     241m         12%    807Mi           10%</span><br><span class="line">m3     229m         11%    704Mi           8%</span><br><span class="line">w1     1068m        53%    266Mi           3%</span><br><span class="line">w2     1084m        54%    650Mi           8%</span><br></pre></td></tr></table></figure>
+
+<p>結束測試，刪除物件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kd -f .</span><br></pre></td></tr></table></figure>
+
+<h1 id="Managing-the-Container-Life-Cycle"><a href="#Managing-the-Container-Life-Cycle" class="headerlink" title="Managing the Container Life Cycle"></a>Managing the Container Life Cycle</h1><h2 id="Liveness-and-Readiness-Probes"><a href="#Liveness-and-Readiness-Probes" class="headerlink" title="Liveness and Readiness Probes"></a>Liveness and Readiness Probes</h2><p>(2022&#x2F;09&#x2F;05 10:35)</p>
+<ul>
+<li>The kubelet uses liveness probes to know when to restart a Container. For example, liveness probes could catch a deadlock, where an application is running, but unable to make progress. Restarting a Container in such a state can help to make the application more available despite bugs.</li>
+<li>The kubelet uses readiness probes to know when a Container is ready to start accepting traffic. A Pod is considered ready when all of its Containers are ready. One use of this signal is to control which Pods are used as backends for Services. When a Pod is not ready, it is removed from Service load balancers.</li>
+</ul>
+<p>共有三種檢測方式，分別是</p>
+<ul>
+<li>ExecAction: Executes a specified command inside the Container. The diagnostic is considered successful if the command exits with a status code of 0.</li>
+<li>TCPSocketAction: Performs a TCP check against the Container’s IP address on a specified port. The diagnostic is considered successful if the port is open.<ul>
+<li>像是 Linux 命令的 <code>nc</code> ，檢查 IP 的 port 有沒有開</li>
+</ul>
+</li>
+<li>HTTPGetAction: Performs an HTTP Get request against the Container’s IP address on a specified port and path. The diagnostic is considered successful if the response has a status code greater than or equal to 200 and less than 400.<ul>
+<li>像是 Linux 命令的 <code>curl</code> ，</li>
+</ul>
+</li>
+</ul>
+<p>Each probe has one of three results:</p>
+<ol>
+<li>Success: The Container passed the diagnostic.</li>
+<li>Failure: The Container failed the diagnostic.</li>
+<li>Unknown: The diagnostic failed, so no action should be taken.</li>
+</ol>
+<ul>
+<li>在老師的 K8S Cluster 中，探針會透過 Kubelet 和 CRI-O 監控 Container 的一支程式叫 <code>conmon</code> 來講話，看 Container 的狀態</li>
+<li>如果遇到探針無法執行，需檢查 <code>conmon</code> 的版本 <code>conmon --version</code> 是不是 <code>2.1.2</code>，再 K8S <code>1.23</code> 以後的版本，須將 conmon 升級至 <code>2.1.4</code> 版本<ul>
+<li>升級命令 : <code>sudo apk upgrade conmon --no-cache --update-cache --allow-untrusted --repository http://dl-cdn.alpinelinux.org/alpine/edge/community</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="Liveness-Probe-Exec"><a href="#Liveness-Probe-Exec" class="headerlink" title="Liveness Probe - Exec"></a>Liveness Probe - Exec</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: liveness-exec</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: liveness</span><br><span class="line">    image: k8s.gcr.io/busybox</span><br><span class="line">    command: [/bin/sh]</span><br><span class="line">    args:</span><br><span class="line">    - -c</span><br><span class="line">    - touch /tmp/healthy; sleep 20; rm -rf /tmp/healthy; sleep 300</span><br><span class="line">    livenessProbe:</span><br><span class="line">      exec:</span><br><span class="line">        command:</span><br><span class="line">        - cat</span><br><span class="line">        - /tmp/healthy</span><br><span class="line">      initialDelaySeconds: 5</span><br><span class="line">      periodSeconds: 5 &#x27;&gt;  ~/wulin/yaml/exec-liveness.yml</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Container 跑的命令是 先建立 <code>/tmp/healthy</code> 這個空檔案，再睡 20 秒，刪除檔案，再睡 300 秒</li>
+<li><code>livenessProbe</code> ，liveness 探針<ul>
+<li><code>exec</code> ，透過進入 Container 執行命令來健康檢查<ul>
+<li>執行的命令是 看 <code>/tmp/healthy</code> 檔案的內容</li>
+</ul>
+</li>
+<li><code>initialDelaySeconds: 5</code>，Container init 後，等 5 秒後，開始健康檢查</li>
+<li><code>periodSeconds: 5</code>，每 5 秒檢查一次</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># 佈署 exec-liveness.yml</span><br><span class="line">$ kubectl apply -f  ~/wulin/yaml/exec-liveness.yml</span><br><span class="line"></span><br><span class="line"># 檢視 exec-liveness Pod 的 Event</span><br><span class="line">$ kubectl describe pod liveness-exec</span><br><span class="line">.......</span><br><span class="line">  Normal   Pulled     58s                kubelet            Successfully pulled image &quot;k8s.gcr.io/busybox&quot; in 7.253319528s</span><br><span class="line">  Normal   Created    57s                kubelet            Created container liveness</span><br><span class="line">  Normal   Started    56s                kubelet            Started container liveness</span><br><span class="line">  Warning  Unhealthy  25s (x3 over 35s)  kubelet            Liveness probe failed: cat: cant open &#x27;/tmp/healthy&#x27;: No such file or directory</span><br><span class="line">  Normal   Killing    25s                kubelet            Container liveness failed liveness probe, will be restarted</span><br><span class="line"></span><br><span class="line">$ kubectl get pod</span><br><span class="line">NAME              READY   STATUS    RESTARTS   AGE</span><br><span class="line">liveness-exec   1/1     Running    2          2m57s</span><br><span class="line"></span><br><span class="line">移除 Pod</span><br><span class="line">$ kubectl delete -f  ~/wulin/yaml/exec-liveness.yml</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="K8S-Namespace-LimitRange"><a href="#K8S-Namespace-LimitRange" class="headerlink" title="K8S Namespace LimitRange"></a>K8S Namespace LimitRange</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl create namespace memlimit</span><br><span class="line"></span><br><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: LimitRange</span><br><span class="line">metadata:</span><br><span class="line">  name: mem-limit-range</span><br><span class="line">spec:</span><br><span class="line">  limits:</span><br><span class="line">  - default:</span><br><span class="line">      memory: 512Mi</span><br><span class="line">    defaultRequest:</span><br><span class="line">      memory: 256Mi</span><br><span class="line">    max:</span><br><span class="line">      memory: 2Gi</span><br><span class="line">    min:</span><br><span class="line">      memory: 256Mi</span><br><span class="line">    type: Container  &#x27;&gt; ~/wulin/yaml/limitrange.yaml</span><br><span class="line"></span><br><span class="line">$ kubectl apply  -f  ~/wulin/yaml/limitrange.yaml -n memlimit</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>default.memory</code>，</li>
+<li><code>LimitRange</code> ，會針對一個 POD 產生限制, 並不是限制所有 POD 的總和</li>
+<li>注意 ! 如果 Namespace 在 <code>LimitRange</code> 產生之前的物件，是不會受到</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: memlimit-pod</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: memlimit-pod-nginx</span><br><span class="line">    image: k8s.gcr.io/nginx &#x27; &gt; ~/wulin/yaml/memlimit-pod.yaml</span><br><span class="line"></span><br><span class="line">$ kubectl apply -f ~/wulin/yaml/memlimit-pod.yaml -n memlimit</span><br><span class="line">pod/memlimit-pod created</span><br><span class="line"></span><br><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: memlimit-pod1</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: memlimit-pod-nginx</span><br><span class="line">    image: k8s.gcr.io/nginx</span><br><span class="line">    resources:</span><br><span class="line">      limits:</span><br><span class="line">        memory: &quot;2Gi&quot;  &#x27; &gt; ~/wulin/yaml/memlimit-pod1.yaml</span><br><span class="line"></span><br><span class="line"># 以下命令會執行成功</span><br><span class="line">$ kubectl apply -f  ~/wulin/yaml/memlimit-pod1.yaml -n memlimit</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="K8S-Namespace-Resource-Quota"><a href="#K8S-Namespace-Resource-Quota" class="headerlink" title="K8S Namespace Resource Quota"></a>K8S Namespace Resource Quota</h1><p>編輯 yaml 檔</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nano ~/wulin/yaml/nsrslimit.yaml</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Namespace</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">mynsrs</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ResourceQuota</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">compute-quota</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">mynsrs</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">hard:</span></span><br><span class="line">    <span class="attr">requests.cpu:</span> <span class="string">&quot;1&quot;</span></span><br><span class="line">    <span class="attr">requests.memory:</span> <span class="string">256Mi</span></span><br><span class="line">    <span class="attr">requests.nvidia.com/gpu:</span> <span class="number">1</span></span><br><span class="line">    <span class="attr">limits.cpu:</span> <span class="string">&quot;2&quot;</span></span><br><span class="line">    <span class="attr">limits.memory:</span> <span class="string">1Gi</span></span><br><span class="line">    <span class="attr">limits.nvidia.com/gpu:</span> <span class="number">2</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ResourceQuota</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">object-quota</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">mynsrs</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">hard:</span></span><br><span class="line">    <span class="attr">configmaps:</span> <span class="string">&quot;2&quot;</span></span><br><span class="line">    <span class="attr">persistentvolumeclaims:</span> <span class="string">&quot;2&quot;</span></span><br><span class="line">    <span class="attr">replicationcontrollers:</span> <span class="string">&quot;2&quot;</span></span><br><span class="line">    <span class="attr">secrets:</span> <span class="string">&quot;10&quot;</span></span><br><span class="line">    <span class="attr">services:</span> <span class="string">&quot;10&quot;</span></span><br><span class="line">    <span class="attr">services.loadbalancers:</span> <span class="string">&quot;2&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li>yaml 檔中，如果要宣告多個物件，物件跟物間中間用 <code>---</code> 區隔</li>
+<li>在 <code>ResourceQuota</code> 中，如果有宣告建立物件的數量限制，代表該物件只能被建立幾個，未宣告的物件則不受數量限制。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: nsrs-pod</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: nsrs-pod-nginx</span><br><span class="line">    image: k8s.gcr.io/nginx &#x27; &gt; ~/wulin/yaml/nsrs-pod.yaml</span><br><span class="line"></span><br><span class="line">$ kubectl apply -f ~/wulin/yaml/nsrs-pod.yaml -n mynsrs</span><br><span class="line">Error from server (Forbidden): error when creating &quot;nsrs-pod.yaml&quot;: pods &quot;nsrs-pod&quot; is forbidden: failed quota: compute-quota: must specify limits.cpu,limits.memory,requests.cpu,requests.memory</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>當一個 Namespace 有分配 ResourceQuota 和對應的 Namespace 時，所有在該 Namespace 內使用元件時必須都要詳細指明用量，不然不給用！</li>
+</ul>
+<p>重新設定運算資源</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">&#x27;apiVersion: v1</span></span><br><span class="line"><span class="string">kind: Pod</span></span><br><span class="line"><span class="string">metadata:</span></span><br><span class="line"><span class="string">  name: nsrs-pod</span></span><br><span class="line"><span class="string">spec:</span></span><br><span class="line"><span class="string">  containers:</span></span><br><span class="line"><span class="string">  - name: nsrs-pod-nginx</span></span><br><span class="line"><span class="string">    image: k8s.gcr.io/nginx </span></span><br><span class="line"><span class="string">    resources:</span></span><br><span class="line"><span class="string">      requests:</span></span><br><span class="line"><span class="string">         cpu: 1.0</span></span><br><span class="line"><span class="string">         memory: 256Mi</span></span><br><span class="line"><span class="string">      limits:</span></span><br><span class="line"><span class="string">         cpu: 2.0</span></span><br><span class="line"><span class="string">         memory: 512Mi &#x27;</span> &gt; ~/wulin/yaml/nsrs-pod.yaml</span><br><span class="line"></span><br><span class="line">$ kubectl apply -f ~/wulin/yaml/nsrs-pod.yaml -n mynsrs</span><br><span class="line"></span><br><span class="line">$ kg po -n mynsrs</span><br><span class="line">NAME       READY   STATUS    RESTARTS   AGE</span><br><span class="line">nsrs-pod   1/1     Running   0          93s</span><br><span class="line"></span><br><span class="line">$ kg resourcequotas -n mynsrs</span><br><span class="line">NAME            AGE   REQUEST                                                                                                                                 LIMIT</span><br><span class="line">compute-quota   10m   requests.cpu: 1/1, requests.memory: 256Mi/256Mi, requests.nvidia.com/gpu: 0/1                                                           limits.cpu: 2/2, limits.memory: 512Mi/1Gi, limits.nvidia.com/gpu: 0/2</span><br><span class="line">object-quota    10m   configmaps: 1/2, persistentvolumeclaims: 0/2, replicationcontrollers: 0/2, secrets: 0/10, services: 0/10, services.loadbalancers: 0/2</span><br></pre></td></tr></table></figure>
+
+<p>在建立同樣運算資源的 pod 一次</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ echo &#x27;apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: nsrs-pod1</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: nsrs-pod-nginx</span><br><span class="line">    image: k8s.gcr.io/nginx </span><br><span class="line">    resources:</span><br><span class="line">      requests:</span><br><span class="line">         cpu: 1.0</span><br><span class="line">         memory: 256Mi</span><br><span class="line">      limits:</span><br><span class="line">         cpu: 2.0</span><br><span class="line">         memory: 512Mi &#x27; &gt; ~/wulin/yaml/nsrs-pod1.yaml</span><br><span class="line"></span><br><span class="line">$ kubectl apply -f ~/wulin/yaml/nsrs-pod1.yaml -n mynsrs</span><br><span class="line">Error from server (Forbidden): error when creating &quot;nsrs-pod1.yaml&quot;: pods &quot;nsrs-pod1&quot; is forbidden: exceeded quota: compute-quota, requested: limits.cpu=2,requests.cpu=1,requests.memory=256Mi, used: limits.cpu=2,requests.cpu=1,requests.memory=256Mi, limited: limits.cpu=2,requests.cpu=1,requests.memory=256Mi</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%B3%BB%E7%B5%B1%E5%B7%A5%E7%A8%8B/" rel="tag"># 系統工程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Kubernetes%20Resource%20Storage.html" rel="prev" title="Kubernetes Resource Storage">
+      <i class="fa fa-chevron-left"></i> Kubernetes Resource Storage
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Kubernetes-RBAC-Context.html" rel="next" title="Kubernetes-RBAC-Context">
+      Kubernetes-RBAC-Context <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-Resource-CPU-Memory"><span class="nav-number">1.</span> <span class="nav-text">Kubernetes-Resource-CPU-Memory</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Assigning-Pods-to-Nodes"><span class="nav-number">1.1.</span> <span class="nav-text">Assigning Pods to Nodes</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Metrics-Server"><span class="nav-number">2.</span> <span class="nav-text">Metrics Server</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rsource-Requests-amp-Limits"><span class="nav-number">2.0.1.</span> <span class="nav-text">Rsource Requests &amp; Limits</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Horizontal-Pod-Autoscaler"><span class="nav-number">3.</span> <span class="nav-text">Horizontal Pod Autoscaler</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Managing-the-Container-Life-Cycle"><span class="nav-number">4.</span> <span class="nav-text">Managing the Container Life Cycle</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Liveness-and-Readiness-Probes"><span class="nav-number">4.1.</span> <span class="nav-text">Liveness and Readiness Probes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Liveness-Probe-Exec"><span class="nav-number">4.2.</span> <span class="nav-text">Liveness Probe - Exec</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#K8S-Namespace-LimitRange"><span class="nav-number">5.</span> <span class="nav-text">K8S Namespace LimitRange</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#K8S-Namespace-Resource-Quota"><span class="nav-number">6.</span> <span class="nav-text">K8S Namespace Resource Quota</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Antony Cehn</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Antony.Chen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

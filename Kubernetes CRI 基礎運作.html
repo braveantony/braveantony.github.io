@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Kubernetes CRI 基礎運作:::warning :::spoiler 目錄 [TOC]  ::: :::success檢查 node 主機的運作情形 1$ kubectl get nodes  :::spoiler 命令結果 1234NAME   STATUS   ROLES           AGE   VERSIONm1     Ready    control-plane">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Antony 的學習筆記">
+<meta property="og:url" content="http://example.com/Kubernetes%20CRI%20%E5%9F%BA%E7%A4%8E%E9%81%8B%E4%BD%9C.html">
+<meta property="og:site_name" content="Antony 的學習筆記">
+<meta property="og:description" content="Kubernetes CRI 基礎運作:::warning :::spoiler 目錄 [TOC]  ::: :::success檢查 node 主機的運作情形 1$ kubectl get nodes  :::spoiler 命令結果 1234NAME   STATUS   ROLES           AGE   VERSIONm1     Ready    control-plane">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/qYLBPUu.png">
+<meta property="og:image" content="https://i.imgur.com/u840Vz0.png">
+<meta property="og:image" content="https://i.imgur.com/p5RRYhy.png">
+<meta property="article:published_time" content="2022-08-29T22:54:16.000Z">
+<meta property="article:modified_time" content="2023-05-07T08:15:42.373Z">
+<meta property="article:author" content="Antony Cehn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/qYLBPUu.png">
+
+<link rel="canonical" href="http://example.com/Kubernetes%20CRI%20%E5%9F%BA%E7%A4%8E%E9%81%8B%E4%BD%9C.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title> | Antony 的學習筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Antony 的學習筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">這個網站將紀錄持續記錄我學習到各種知識的筆記</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/Kubernetes%20CRI%20%E5%9F%BA%E7%A4%8E%E9%81%8B%E4%BD%9C.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Antony Cehn">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Antony 的學習筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-30 06:54:16" itemprop="dateCreated datePublished" datetime="2022-08-30T06:54:16+08:00">2022-08-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-05-07 16:15:42" itemprop="dateModified" datetime="2023-05-07T16:15:42+08:00">2023-05-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Kubernetes-CRI-基礎運作"><a href="#Kubernetes-CRI-基礎運作" class="headerlink" title="Kubernetes CRI 基礎運作"></a>Kubernetes CRI 基礎運作</h1><p>:::warning</p>
+<p>:::spoiler 目錄</p>
+<p>[TOC]</p>
+<hr>
+<p>:::</p>
+<p>:::success<br>檢查 node 主機的運作情形</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get nodes</span><br></pre></td></tr></table></figure>
+
+<p>:::spoiler 命令結果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">NAME   STATUS   ROLES           AGE   VERSION</span><br><span class="line">m1     Ready    control-plane   16h   v1.24.0</span><br><span class="line">w1     Ready    worker          16h   v1.24.0</span><br><span class="line">w2     Ready    worker          16h   v1.24.0</span><br></pre></td></tr></table></figure>
+<p>:::</p>
+<p>:::success<br>檢視pod 的運作情況</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods -n kube-system -o wide</span><br></pre></td></tr></table></figure>
+
+<p>:::spoiler 命令結果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">NAME                         READY   STATUS    RESTARTS   AGE   IP             NODE   NOMINATED NODE   READINESS GATES</span><br><span class="line">coredns-6d4b75cb6d-58jvb     1/1     Running   2          16h   10.244.0.6     m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">coredns-6d4b75cb6d-z2sjv     1/1     Running   2          16h   10.244.0.7     m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">etcd-m1                      1/1     Running   3          16h   192.168.61.4   m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-apiserver-m1            1/1     Running   3          16h   192.168.61.4   m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-controller-manager-m1   1/1     Running   3          16h   192.168.61.4   m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-flannel-ds-jpqmz        1/1     Running   2          16h   192.168.61.7   w2     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-flannel-ds-qcsfc        1/1     Running   2          16h   192.168.61.6   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-flannel-ds-rwmjm        1/1     Running   7          16h   192.168.61.4   m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-proxy-cx78m             1/1     Running   2          16h   192.168.61.6   w1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-proxy-fcb8s             1/1     Running   3          16h   192.168.61.4   m1     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-proxy-tgmbm             1/1     Running   2          16h   192.168.61.7   w2     &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kube-scheduler-m1            1/1     Running   3          16h   192.168.61.4   m1     &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>後面加<code>-o wide</code> 可以看到pod 的 ip 位址 和所在的主機<br>:::</p>
+</blockquote>
+<p>:::success<br>檢視 CRI-O 的版本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ crio -version</span><br></pre></td></tr></table></figure>
+
+<p>CRI-O 的版本一定跟著 K8S 的版本在運作</p>
+<p>:::spoiler 命令結果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">crio version 1.24.1</span><br><span class="line">Version:          1.24.1</span><br><span class="line">GitCommit:        edda4988043086ee714c0b651ff91e68fa70adf9</span><br><span class="line">GitTreeState:     clean</span><br><span class="line">BuildDate:        2022-07-21T14:19:25Z</span><br><span class="line">GoVersion:        go1.18.4</span><br><span class="line">Compiler:         gc</span><br><span class="line">Platform:         linux/amd64</span><br><span class="line">Linkmode:         dynamic</span><br><span class="line">BuildTags:        containers_image_openpgp, containers_image_ostree_stub, seccomp, selinux</span><br><span class="line">SeccompEnabled:   true</span><br><span class="line">AppArmorEnabled:  false</span><br></pre></td></tr></table></figure>
+<p>:::</p>
+<p>:::success<br>crictl 的簡易手冊</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ crictl --help | grep -A 20 COMMANDS:</span><br></pre></td></tr></table></figure>
+
+<p>:::spoiler 命令結果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">COMMANDS:</span><br><span class="line">   attach              Attach to a running container</span><br><span class="line">   create              Create a new container</span><br><span class="line">   exec                Run a command in a running container</span><br><span class="line">   version             Display runtime version information</span><br><span class="line">   images, image, img  List images</span><br><span class="line">   inspect             Display the status of one or more containers</span><br><span class="line">   inspecti            Return the status of one or more images</span><br><span class="line">   imagefsinfo         Return image filesystem info</span><br><span class="line">   inspectp            Display the status of one or more pods</span><br><span class="line">   logs                Fetch the logs of a container</span><br><span class="line">   port-forward        Forward local port to a pod</span><br><span class="line">   ps                  List containers</span><br><span class="line">   pull                Pull an image from a registry</span><br><span class="line">   run                 Run a new container inside a sandbox</span><br><span class="line">   runp                Run a new pod</span><br><span class="line">   rm                  Remove one or more containers</span><br><span class="line">   rmi                 Remove one or more images</span><br><span class="line">   rmp                 Remove one or more pods</span><br><span class="line">   pods                List pods</span><br><span class="line">   start               Start one or more created containers</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>run</code> ，可以透過 cri-o 建立 container<br>:::</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ crictl</span><br><span class="line">NAME:</span><br><span class="line">   crictl - client for CRI</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>crictl 這個套件，專門管理 CRI 的套件</li>
+<li>crictl + crio 約略等於 Podman</li>
+<li>如果一個系統的 deamon 太多，會很容易被人攻陷，且資源運算上會吃很兇，所以docker 被淘汰</li>
+<li>podman 出生 全名： pod manager ，他可以做到docker 90%可以做的事情，且不需要依靠deamon</li>
+</ul>
+<p>:::success</p>
+<p>檢視 podman 處理 image 的功能</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman --help</span><br><span class="line">  load        Load image(s) from a tar archive</span><br><span class="line">  save        Save image(s) to an archive</span><br><span class="line">  export      Export container&#x27;s filesystem contents as a tar archive</span><br><span class="line">  import      Import a tarball to create a filesystem image</span><br></pre></td></tr></table></figure>
+
+<p><font color=red><strong><code>CRI-O</code> 並沒有以上 <code>load</code> ( 還原 image )、 <code>save</code> ( 備份 image ) 、<code>build</code>、 <code>export</code> 和 <code>import</code> 的命令</strong></font></p>
+<p>因為 cri-o 只有下載 image 的能力，所以需要 podman 來支援 image 的管理<br>在老師的系統中使用 CRI-O + podman 來維運 K8s</p>
+<p>podman 和 cri-o 上網抓 image 後儲存的位置相同，怎麼證明？<br>:::</p>
+<h2 id="Podman-與-CRI-O-Image-存儲目錄"><a href="#Podman-與-CRI-O-Image-存儲目錄" class="headerlink" title="Podman 與 CRI-O Image 存儲目錄"></a>Podman 與 CRI-O Image 存儲目錄</h2><p>檢視 podman 儲存 image 的目錄</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> /etc/containers/storage.conf | grep -A 15 <span class="string">&#x27;\[storage\]&#x27;</span></span><br><span class="line">[storage]</span><br><span class="line"></span><br><span class="line"><span class="comment"># Default Storage Driver, Must be set for proper operation.</span></span><br><span class="line">driver = <span class="string">&quot;overlay&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Temporary storage location</span></span><br><span class="line">runroot = <span class="string">&quot;/run/containers/storage&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Primary Read/Write location of container storage</span></span><br><span class="line"><span class="comment"># When changing the graphroot location on an SELINUX system, you must</span></span><br><span class="line"><span class="comment"># ensure  the labeling matches the default locations labels with the</span></span><br><span class="line"><span class="comment"># following commands:</span></span><br><span class="line"><span class="comment"># semanage fcontext -a -e /var/lib/containers/storage /NEWSTORAGEPATH</span></span><br><span class="line"><span class="comment"># restorecon -R -v /NEWSTORAGEPATH</span></span><br><span class="line">graphroot = <span class="string">&quot;/var/lib/containers/storage&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>檢視 cri-o 儲存 image 的目錄</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ crio-status config</span><br><span class="line">[crio]</span><br><span class="line">  root = &quot;/var/lib/containers/storage&quot;</span><br></pre></td></tr></table></figure>
+
+
+<p>透過 crictl 的命令來看 image 的資訊</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ crictl images</span><br><span class="line">IMAGE                                                      TAG                 IMAGE ID            SIZE</span><br><span class="line">docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin   v1.1.0              fcecffc7ad4af       8.37MB</span><br><span class="line">docker.io/rancher/mirrored-flannelcni-flannel              v0.18.0             744246d629cff       63.3MB</span><br><span class="line">k8s.gcr.io/coredns/coredns                                 v1.8.6              a4ca41631cc7a       47MB</span><br><span class="line">k8s.gcr.io/etcd                                            3.5.3-0             aebe758cef4cd       301MB</span><br><span class="line">k8s.gcr.io/kube-apiserver                                  v1.24.1             e9f4b425f9192       131MB</span><br><span class="line">k8s.gcr.io/kube-controller-manager                         v1.24.1             b4ea7e648530d       121MB</span><br><span class="line">k8s.gcr.io/kube-proxy                                      v1.24.1             beb86f5d8e6cd       112MB</span><br><span class="line">k8s.gcr.io/kube-scheduler                                  v1.24.1             18688a72645c5       52.3MB</span><br><span class="line">k8s.gcr.io/pause                                           3.6                 6270bb605e12e       690kB</span><br><span class="line">k8s.gcr.io/pause                                           3.7                 221177c6082a8       718kB</span><br></pre></td></tr></table></figure>
+
+<p>透過 sudo podman 的命令來看 image 的資訊</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman images</span><br><span class="line">REPOSITORY                                                TAG         IMAGE ID      CREATED       SIZE</span><br><span class="line">docker.io/rancher/mirrored-flannelcni-flannel             v0.18.0     744246d629cf  4 days ago    63.3 MB</span><br><span class="line">k8s.gcr.io/kube-apiserver                                 v1.24.1     e9f4b425f919  6 days ago    131 MB</span><br><span class="line">k8s.gcr.io/kube-controller-manager                        v1.24.1     b4ea7e648530  6 days ago    121 MB</span><br><span class="line">k8s.gcr.io/kube-scheduler                                 v1.24.1     18688a72645c  6 days ago    52.3 MB</span><br><span class="line">k8s.gcr.io/kube-proxy                                     v1.24.1     beb86f5d8e6c  6 days ago    112 MB</span><br><span class="line">docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin  v1.1.0      fcecffc7ad4a  10 days ago   8.37 MB</span><br><span class="line">k8s.gcr.io/etcd                                           3.5.3-0     aebe758cef4c  6 weeks ago   301 MB</span><br><span class="line">k8s.gcr.io/pause                                          3.7         221177c6082a  2 months ago  718 kB</span><br><span class="line">k8s.gcr.io/coredns/coredns                                v1.8.6      a4ca41631cc7  7 months ago  47 MB</span><br><span class="line">k8s.gcr.io/pause                                          3.6         6270bb605e12  9 months ago  690 kB</span><br></pre></td></tr></table></figure>
+
+
+<p>可以發現 Podman 和 CRI-O 儲存 image 的資訊</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">備份 image </span><br><span class="line">$ sudo podman save docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin:v1.1.0 &gt; flannel-plugin.tar</span><br><span class="line"></span><br><span class="line">備份 image </span><br><span class="line">$ sudo podman save docker.io/rancher/mirrored-flannelcni-flannel:v0.18.1 &gt; flannel.tar</span><br><span class="line"></span><br><span class="line">還原 image</span><br><span class="line">$ sudo podman load &lt; flannel-plugin.tar</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Crun-與-runC-大小比較"><a href="#Crun-與-runC-大小比較" class="headerlink" title="Crun 與 runC 大小比較"></a>Crun 與 runC 大小比較</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ls -lh `which runc`</span><br><span class="line">-rwxr-xr-x 1 root root 9.1M Aug  2 18:39 /usr/bin/runc</span><br><span class="line"></span><br><span class="line">$ ls -lh `which crun`</span><br><span class="line">-rwxr-xr-x 1 root root 383K Apr 28 06:20 /usr/bin/crun</span><br></pre></td></tr></table></figure>
+
+<h2 id="crun-與-runc-效能比較"><a href="#crun-與-runc-效能比較" class="headerlink" title="crun 與 runc 效能比較"></a>crun 與 runc 效能比較</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">## 建立 Container 所需的rootfs</span><br><span class="line">$ mkdir -p ~/wulin/rt/rootfs; cd ~/wulin/rt/rootfs; curl -o alpine.tar.gz http://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-minirootfs-3.14.2-x86_64.tar.gz; tar xvf alpine.tar.gz ;rm alpine.tar.gz; cd ..</span><br><span class="line"></span><br><span class="line">## 更改權限</span><br><span class="line">$ sudo chown root:root -R rootfs/</span><br><span class="line"></span><br><span class="line">## 產生 config.json</span><br><span class="line">$ runc spec</span><br></pre></td></tr></table></figure>
+
+
+<p>實測 run<font color=red>c</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ time for i in &#123;1..100&#125;; do echo &quot;exit&quot; | sudo runc run b1 &amp;&gt;/dev/null; done</span><br></pre></td></tr></table></figure>
+
+<p>output : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">real    0m3.238s</span><br><span class="line">user    0m1.386s</span><br><span class="line">sys     0m1.392s</span><br></pre></td></tr></table></figure>
+
+
+<p>實測 <font color=red>c</font>run</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ time for i in &#123;1..100&#125;; do echo &quot;exit&quot; | sudo crun run b1 &amp;&gt;/dev/null; done</span><br></pre></td></tr></table></figure>
+
+<p>output : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">real    0m1.081s</span><br><span class="line">user    0m0.545s</span><br><span class="line">sys     0m0.418s</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="設定-CRI-O-執行-crun"><a href="#設定-CRI-O-執行-crun" class="headerlink" title="設定 CRI-O 執行 crun"></a>設定 CRI-O 執行 crun</h2><p>3 台主機： m1 w1 w2 都要設定</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ sudo nano /etc/crio/crio.conf</span><br><span class="line">[crio.runtime]</span><br><span class="line"><span class="comment"># Overide defaults to not use systemd cgroups.</span></span><br><span class="line">conmon_cgroup = <span class="string">&quot;pod&quot;</span></span><br><span class="line">cgroup_manager = <span class="string">&quot;cgroupfs&quot;</span></span><br><span class="line">default_runtime = <span class="string">&quot;crun&quot;</span></span><br><span class="line"></span><br><span class="line">[crio.runtime.runtimes.crun]</span><br><span class="line">runtime_path = <span class="string">&quot;/usr/bin/crun&quot;</span></span><br><span class="line">runtime_type = <span class="string">&quot;oci&quot;</span></span><br><span class="line">runtime_root = <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">[crio.network]</span><br><span class="line">network_dir = <span class="string">&quot;/etc/cni/net.d/&quot;</span></span><br><span class="line">plugin_dir = <span class="string">&quot;/opt/cni/bin&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li><code>default_runtime = &quot;crun&quot;</code>，設定 CRI-O 用 crun 來建 Cotainer</li>
+<li><code>[crio.runtime.runtimes.crun]</code>，下面放 crun 的設定項目</li>
+<li><code>runtime_path</code>，設定 crun 放在哪</li>
+<li><code>runtime_type</code>，crun 用的標準</li>
+<li>CRI-O 內定使用 runc 建 Container，但 crun 比較快，所以修改 CRI-O 設定檔來使用 crun，代表最底層 container 的執行從 runc 改成 crun。</li>
+<li>為什麼有 crun 可以用？因為有安裝 podman，podman 內定使用 crun 建 Container。</li>
+</ul>
+<p>都設定好後，要重啟 node</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ssh w1 sudo reboot</span><br><span class="line">$ ssh w2 sudo reboot</span><br><span class="line">$ sudo reboot</span><br></pre></td></tr></table></figure>
+
+<p>好了後，確定 nodes 是否正常運作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kg nodes</span><br></pre></td></tr></table></figure>
+
+<p>再確定主機內的 pods 是否都有 running</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ks</span><br></pre></td></tr></table></figure>
+
+<p>補充 : </p>
+<ul>
+<li><code>crun</code> ，由安裝 podman 附帶安裝。</li>
+</ul>
+<h2 id="Kubernetes-檢測"><a href="#Kubernetes-檢測" class="headerlink" title="Kubernetes 檢測"></a>Kubernetes 檢測</h2><p>透過 kubectl 產生一個 pod</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run nginx --image=quay.io/cloudwalker/nginx</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>因為只有指定一個 image 所以 只會這個 pod 只會產生一台 container</p>
+</blockquote>
+<p>檢查 pod 運作資訊</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY   STATUS    RESTARTS   AGE</span><br><span class="line">nginx   1/1     Running   0          22s</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>READY 1/1</code> ，後面的 1 是 pod 裡有幾台Container，前面的 1 是 pod 的裡面的 Container 是否有 running ，如果有 running 就會顯示 1</p>
+</blockquote>
+<p>curl pod 的 ip 看網站有沒有順利啟動</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://10.244.1.2</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">...以下省略</span><br></pre></td></tr></table></figure>
+
+<h3 id="檢視-K8s-Cluster-的網路運作"><a href="#檢視-K8s-Cluster-的網路運作" class="headerlink" title="檢視 K8s Cluster 的網路運作"></a>檢視 K8s Cluster 的網路運作</h3><p><img src="https://i.imgur.com/qYLBPUu.png"></p>
+<p>當我們建立了一個 pod ，裡面的 Container 起了一個網站，這台 pod  會得到一個 Virtul IP ，這個虛擬 IP 是透過 iptables 做出來的，我們可以在 m1 、 w1 和 w2 都能用 curl 指令連到 pod 所建立的網站。</p>
+<hr>
+<p>建立和執行我們的 pod </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run a1 -it --image=quay.io/cloudwalker/alpine -- sh</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>-it</code> ， 給一個虛擬終端機<br><code>--</code> ，分割符號，後面是針對 pod 所要下達的命令</p>
+</blockquote>
+<p>進 pod ， 安裝 curl 指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ apk add curl</span><br></pre></td></tr></table></figure>
+
+<p>連線到剛剛建立 nginx 的那台 pod</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://10.244.1.2</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">...以下省略</span><br></pre></td></tr></table></figure>
+
+<p>更新網路示意圖</p>
+<p><img src="https://i.imgur.com/u840Vz0.png"></p>
+<p>小總結</p>
+<ul>
+<li>VM m1、w1、w2 皆使用 NAT 模式，由這三臺 VM 組成 Keubernetes Cluster</li>
+<li>pod 是由 Keubernetes 部署的，具備 IP Address（Virtual IP）<ul>
+<li>Virtual IP｜沒有設定在網路卡上，是透過 iptables 實作出來的 IP Address</li>
+</ul>
+</li>
+<li>因為上述架構的關係 pod、node 之間能實現網路通訊</li>
+</ul>
+<p>by 第三組</p>
+<p>刪除剛剛建立的兩台 pod</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl delete pods a1</span><br><span class="line">$ kubectl delete pods nginx</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<h1 id="Kubernetes-CNI-基礎運作"><a href="#Kubernetes-CNI-基礎運作" class="headerlink" title="Kubernetes CNI 基礎運作"></a>Kubernetes CNI 基礎運作</h1><h2 id="Flannel-CNI-單一節點運作架構"><a href="#Flannel-CNI-單一節點運作架構" class="headerlink" title="Flannel CNI 單一節點運作架構"></a>Flannel CNI 單一節點運作架構</h2><p><img src="https://i.imgur.com/p5RRYhy.png"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">m1:~$ ifconfig</span><br><span class="line">cni0      Link encap:Ethernet  HWaddr 0E:31:89:91:11:C2</span><br><span class="line">          inet addr:10.244.0.1  Bcast:10.244.0.255  Mask:255.255.255.0</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">$ ssh w1 <span class="string">&#x27;ifconfig&#x27;</span></span><br><span class="line">cni0      Link encap:Ethernet  HWaddr 82:58:F3:07:50:67</span><br><span class="line">          inet addr:10.244.1.1  Bcast:10.244.1.255  Mask:255.255.255.0</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">$ ssh w2 <span class="string">&#x27;ifconfig&#x27;</span></span><br><span class="line">cni0      Link encap:Ethernet  HWaddr 06:B1:21:B1:1F:8B</span><br><span class="line">          inet addr:10.244.2.1  Bcast:10.244.2.255  Mask:255.255.255.0</span><br><span class="line"></span><br><span class="line">m1:~$ brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">cni0            8000.0e31899111c2       no              vethbb0b5903</span><br><span class="line">                                                        vethfc422baa</span><br><span class="line">                                            </span><br><span class="line">$ ssh w1 <span class="string">&#x27;brctl show&#x27;</span></span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">cni0            8000.8258f3075067       no</span><br><span class="line"></span><br><span class="line">$ ssh w2 <span class="string">&#x27;brctl show&#x27;</span></span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">cni0            8000.06b121b11f8b       no              vethfff77f1d</span><br><span class="line"></span><br><span class="line">$ ps aux | grep -v grep | grep flanneld</span><br><span class="line">root       4406  0.1  0.6 1335180 37392 ?       Ssl  14:52   0:09 /opt/bin/flanneld --ip-masq --kube-subnet-mgr</span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li>因 w1 及 w2 沒有建立過 POD, 所以沒有建立 cni0 橋接器, 一但有建立 POD, cni0 橋接器便會建立</li>
+</ul>
+<h2 id="插播"><a href="#插播" class="headerlink" title="插播"></a>插播</h2><h3 id="建立-mysql-Contianer"><a href="#建立-mysql-Contianer" class="headerlink" title="建立 mysql Contianer"></a>建立 mysql Contianer</h3><p>準備和進入工作目錄、編輯 Dockerfile</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir mydb; cd mydb</span><br><span class="line"></span><br><span class="line">$ nano Dockerfile</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> quay.io/cloudwalker/mysql-server</span><br><span class="line"></span><br><span class="line"><span class="keyword">ENV</span> MYSQL_ROOT_PASSWORD bigred</span><br><span class="line"><span class="keyword">ADD</span><span class="language-bash"> myuser.sql /docker-entrypoint-initdb.d</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">3306</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>FROM</code>，指定要用哪一片 image 建立新的 image ，這裡指定的是 <code>quay.io/cloudwalker/mysql-server</code></li>
+<li><code>ENV</code>，等等在 build image 的時候，宣告 變數 <code>MYSQL_ROOT_PASSWORD</code> 的值等於 <code>bigred</code></li>
+<li><code>ADD</code>，image 做出來後，將 myuser.sql 這個檔案複製到 image 的 <code>/docker-entrypoint-initdb.d</code> 目錄<ul>
+<li>要 <code>ADD</code> 的檔案，需要和 Dockerfile 放在同一層目錄</li>
+</ul>
+</li>
+<li><code>EXPOSE 3306</code>，在 Container 上開一個對外的 3306 port</li>
+</ul>
+<p>編輯 <code>muser.sql</code> </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ nano myuser.sql</span><br><span class="line">CREATE USER <span class="string">&#x27;bigred&#x27;</span>@<span class="string">&#x27;%&#x27;</span> IDENTIFIED WITH mysql_native_password BY <span class="string">&#x27;bigred&#x27;</span>;</span><br><span class="line">GRANT ALL PRIVILEGES ON *.* TO <span class="string">&#x27;bigred&#x27;</span>@<span class="string">&#x27;%&#x27;</span> WITH GRANT OPTION;</span><br><span class="line">flush privileges;</span><br></pre></td></tr></table></figure>
+
+<p>build image</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman build --no-cache -t mydb .</span><br></pre></td></tr></table></figure>
+
+<p>output : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">STEP 1/4: FROM quay.io/cloudwalker/mysql-server</span><br><span class="line">STEP 2/4: ENV MYSQL_ROOT_PASSWORD bigred</span><br><span class="line">WARN[0000] HEALTHCHECK is not supported for OCI image format and will be ignored. Must use `docker` format</span><br><span class="line">--&gt; c0485a22f11</span><br><span class="line">STEP 3/4: ADD myuser.sql /docker-entrypoint-initdb.d</span><br><span class="line">WARN[0000] HEALTHCHECK is not supported for OCI image format and will be ignored. Must use `docker` format</span><br><span class="line">--&gt; c0a9de19856</span><br><span class="line">STEP 4/4: EXPOSE 3306</span><br><span class="line">COMMIT mydb</span><br><span class="line">WARN[0000] HEALTHCHECK is not supported for OCI image format and will be ignored. Must use `docker` format</span><br><span class="line">--&gt; 11a146f48e4</span><br><span class="line">Successfully tagged localhost/mydb:latest</span><br><span class="line">11a146f48e4c2b108f161d7ea8224ce1317594152399ad592ace997f90a148cc</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>出現 Warning 的原因是因為，image 的格式有分 OCI 和 Docker 。</li>
+<li>Docker 的格式有健康檢查，如果由 image 建出來的 Container 不健康，例如 Container 在 running 時，沒有開 3306 port ，他就會提醒。</li>
+<li>OCI 的格式沒有健康檢查的服務。</li>
+</ul>
+<p>檢查 image 有沒有建出來</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman images</span><br><span class="line">REPOSITORY             TAG         IMAGE ID      CREATED        SIZE</span><br><span class="line">localhost/mydb         latest      11a146f48e4c  5 minutes ago  439 MB</span><br></pre></td></tr></table></figure>
+
+<p>run Container</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman run --rm --name bobo -d -p 3306:3306 localhost/mydb</span><br></pre></td></tr></table></figure>
+
+<p>檢查 Container 的狀態</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman ps -a</span><br><span class="line">CONTAINER ID  IMAGE                  COMMAND     CREATED         STATUS            PORTS                   NAMES</span><br><span class="line">13b1733d3975  localhost/mydb:latest  mysqld      10 seconds ago  Up 9 seconds ago  0.0.0.0:3306-&gt;3306/tcp  bobo</span><br></pre></td></tr></table></figure>
+
+<p>登入 mysql</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ mysql -ubigred -p -h $IP</span><br><span class="line">Enter password:bigred</span><br><span class="line"></span><br><span class="line">MySQL [(none)]&gt; select user,host from mysql.user;</span><br><span class="line">+------------------+-----------+</span><br><span class="line">| user             | host      |</span><br><span class="line">+------------------+-----------+</span><br><span class="line">| bigred           | %         |</span><br><span class="line">| healthchecker    | localhost |</span><br><span class="line">| mysql.infoschema | localhost |</span><br><span class="line">| mysql.session    | localhost |</span><br><span class="line">| mysql.sys        | localhost |</span><br><span class="line">| root             | localhost |</span><br><span class="line">+------------------+-----------+</span><br><span class="line">6 rows in set (0.001 sec)</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="建立-gocgi-Container"><a href="#建立-gocgi-Container" class="headerlink" title="建立 gocgi Container"></a>建立 gocgi Container</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">$ wget http://www.oc99.org/zip/gocgi.zip</span><br><span class="line"></span><br><span class="line">$ unzip gocgi.zip</span><br><span class="line"></span><br><span class="line">$ tree gocgi</span><br><span class="line">gocgi</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── go.mod</span><br><span class="line">├── gocgi</span><br><span class="line">├── main</span><br><span class="line">├── main.go</span><br><span class="line">└── www</span><br><span class="line">    ├── cgi</span><br><span class="line">    │   ├── cgidb.sh</span><br><span class="line">    │   ├── cgitbl.sh</span><br><span class="line">    │   ├── hs2.sh</span><br><span class="line">    │   └── mysql.sh</span><br><span class="line">    ├── css</span><br><span class="line">    │   └── styles.css</span><br><span class="line">    ├── html</span><br><span class="line">    │   ├── db.html</span><br><span class="line">    │   ├── hs2.html</span><br><span class="line">    │   ├── index.html</span><br><span class="line">    │   ├── mysql.html</span><br><span class="line">    │   └── tbl.html</span><br><span class="line">    ├── img</span><br><span class="line">    │   └── 2085263.png</span><br><span class="line">    ├── index.html</span><br><span class="line">    └── js</span><br><span class="line"></span><br><span class="line">6 directories, 17 files</span><br></pre></td></tr></table></figure>
+
+<p>檢視 main.go</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">  <span class="string">&quot;net/http/cgi&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">cgiMySQL</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">handler := cgi.Handler&#123;Path: <span class="string">&quot;./www/cgi/mysql.sh&quot;</span>&#125;</span><br><span class="line">handler.ServeHTTP(w, r)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">cgiHS2</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">handler := cgi.Handler&#123;Path: <span class="string">&quot;./www/cgi/hs2.sh&quot;</span>&#125;</span><br><span class="line">handler.ServeHTTP(w, r)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  static := http.FileServer(http.Dir(<span class="string">&quot;./www/&quot;</span>))</span><br><span class="line">  http.Handle(<span class="string">&quot;/&quot;</span>,static)</span><br><span class="line"></span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/mysql&quot;</span>, cgiMySQL)</span><br><span class="line">  http.HandleFunc(<span class="string">&quot;/hs2&quot;</span>, cgiHS2)</span><br><span class="line"></span><br><span class="line">  http.ListenAndServe(<span class="string">&quot;:8080&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>檢視 Dockerfile</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> quay.io/cloudwalker/alpine</span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> apk update &amp;&amp; apk upgrade &amp;&amp; <span class="built_in">mkdir</span> /www</span></span><br><span class="line"><span class="keyword">ADD</span><span class="language-bash"> gocgi /</span></span><br><span class="line"><span class="keyword">ADD</span><span class="language-bash"> www /www/</span></span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;/gocgi&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>FROM quay.io/cloudwalker/alpine</code>，指定 <code>quay.io/cloudwalker/alpine</code> 這片 image 建立新的 image</li>
+<li><code>RUN</code>，在建立 image 時，執行 <code>apk update &amp;&amp; apk upgrade &amp;&amp; mkdir /www</code>，系統更新和在 image 的根目錄下建立 www 目錄</li>
+<li><code>ADD gocgi /</code>，將 gocgi 這支程式拷貝到 image 的根目錄</li>
+<li><code>ADD www /www/</code>，將 <code>www</code> 目錄下的所有子目錄和檔案拷貝到 image 的 <code>/www</code> 目錄下</li>
+<li><code>CMD [&quot;/gocgi&quot;]</code>，等等 run Container 時，內定執行的命令是 gocgi 這支程式</li>
+</ul>
+<p>build image</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman build -t localhost/gocgi .</span><br></pre></td></tr></table></figure>
+
+<p>檢查 image 有無 build 成功</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman images</span><br><span class="line">REPOSITORY          TAG         IMAGE ID      CREATED            SIZE</span><br><span class="line">localhost/gocgi     latest      99424c6c5514  31 seconds ago     20.1 MB</span><br></pre></td></tr></table></figure>
+
+<p>用 <code>localhost/gocgi</code> 這片 image 建 Container</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman run  --name mybobo -d -p 80:8080 localhost/mycgi</span><br></pre></td></tr></table></figure>
+
+<p>檢查 Container 的狀態</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman ps -a</span><br><span class="line">CONTAINER ID  IMAGE                   COMMAND     CREATED            STATUS                PORTS                   NAMES</span><br><span class="line">13b1733d3975  localhost/mydb:latest   mysqld      About an hour ago  Up About an hour ago  0.0.0.0:3306-&gt;3306/tcp  bobo</span><br><span class="line">c6194081d78b  localhost/gocgi:latest  /gocgi      4 seconds ago      Up 4 seconds ago      0.0.0.0:80-&gt;8080/tcp    mybobo</span><br></pre></td></tr></table></figure>
+
+
+<p>檢測服務</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://192.168.179.4</span><br><span class="line">&lt;h1&gt;HaHa&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h6 id="tags-系統工程"><a href="#tags-系統工程" class="headerlink" title="tags: 系統工程"></a>tags: <code>系統工程</code></h6>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Kubernetes-Objects.html" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Kubernetes-First-Steps.html" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-CRI-%E5%9F%BA%E7%A4%8E%E9%81%8B%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">Kubernetes CRI 基礎運作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Podman-%E8%88%87-CRI-O-Image-%E5%AD%98%E5%84%B2%E7%9B%AE%E9%8C%84"><span class="nav-number">1.1.</span> <span class="nav-text">Podman 與 CRI-O Image 存儲目錄</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Crun-%E8%88%87-runC-%E5%A4%A7%E5%B0%8F%E6%AF%94%E8%BC%83"><span class="nav-number">1.2.</span> <span class="nav-text">Crun 與 runC 大小比較</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#crun-%E8%88%87-runc-%E6%95%88%E8%83%BD%E6%AF%94%E8%BC%83"><span class="nav-number">1.3.</span> <span class="nav-text">crun 與 runc 效能比較</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A8%AD%E5%AE%9A-CRI-O-%E5%9F%B7%E8%A1%8C-crun"><span class="nav-number">1.4.</span> <span class="nav-text">設定 CRI-O 執行 crun</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-%E6%AA%A2%E6%B8%AC"><span class="nav-number">1.5.</span> <span class="nav-text">Kubernetes 檢測</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AA%A2%E8%A6%96-K8s-Cluster-%E7%9A%84%E7%B6%B2%E8%B7%AF%E9%81%8B%E4%BD%9C"><span class="nav-number">1.5.1.</span> <span class="nav-text">檢視 K8s Cluster 的網路運作</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-CNI-%E5%9F%BA%E7%A4%8E%E9%81%8B%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">Kubernetes CNI 基礎運作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Flannel-CNI-%E5%96%AE%E4%B8%80%E7%AF%80%E9%BB%9E%E9%81%8B%E4%BD%9C%E6%9E%B6%E6%A7%8B"><span class="nav-number">2.1.</span> <span class="nav-text">Flannel CNI 單一節點運作架構</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%92%E6%92%AD"><span class="nav-number">2.2.</span> <span class="nav-text">插播</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-mysql-Contianer"><span class="nav-number">2.2.1.</span> <span class="nav-text">建立 mysql Contianer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-gocgi-Container"><span class="nav-number">2.2.2.</span> <span class="nav-text">建立 gocgi Container</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#tags-%E7%B3%BB%E7%B5%B1%E5%B7%A5%E7%A8%8B"><span class="nav-number">2.2.2.0.0.1.</span> <span class="nav-text">tags: 系統工程</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Antony Cehn</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Antony.Chen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
