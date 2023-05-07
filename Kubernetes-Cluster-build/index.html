@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"braveantony.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Kubernetes-Cluster-build將 m1 主機安裝成 Kubernetes 的 Master 12# 在 Windows 系統的 cmd 視窗, 執行以下命令$ ssh bigred@&lt;alp.m1 IP&gt;  安裝 Kubernetes 要用的一些管理命令 1$ sudo apk update; sudo apk add kubeadm kubelet kubectl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes-Cluster-build">
+<meta property="og:url" content="https://braveantony.github.io/braveantony.github.io/Kubernetes-Cluster-build/index.html">
+<meta property="og:site_name" content="Antony 的學習筆記">
+<meta property="og:description" content="Kubernetes-Cluster-build將 m1 主機安裝成 Kubernetes 的 Master 12# 在 Windows 系統的 cmd 視窗, 執行以下命令$ ssh bigred@&lt;alp.m1 IP&gt;  安裝 Kubernetes 要用的一些管理命令 1$ sudo apk update; sudo apk add kubeadm kubelet kubectl">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/wyEgvEA.png">
+<meta property="og:image" content="https://i.imgur.com/wlGqQgP.png">
+<meta property="og:image" content="https://i.imgur.com/GBHb05F.png">
+<meta property="article:published_time" content="2022-09-04T18:34:30.000Z">
+<meta property="article:modified_time" content="2023-05-07T10:14:16.818Z">
+<meta property="article:author" content="Antony Cehn">
+<meta property="article:tag" content="系統工程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/wyEgvEA.png">
+
+<link rel="canonical" href="https://braveantony.github.io/braveantony.github.io/Kubernetes-Cluster-build/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Kubernetes-Cluster-build | Antony 的學習筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Antony 的學習筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">這個網站將紀錄持續記錄我學習到各種知識的筆記</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://braveantony.github.io/braveantony.github.io/Kubernetes-Cluster-build/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Antony Cehn">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Antony 的學習筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kubernetes-Cluster-build
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-09-05 02:34:30" itemprop="dateCreated datePublished" datetime="2022-09-05T02:34:30+08:00">2022-09-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-05-07 18:14:16" itemprop="dateModified" datetime="2023-05-07T18:14:16+08:00">2023-05-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Kubernetes-Cluster-build"><a href="#Kubernetes-Cluster-build" class="headerlink" title="Kubernetes-Cluster-build"></a>Kubernetes-Cluster-build</h1><p>將 m1 主機安裝成 Kubernetes 的 Master</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 在 Windows 系統的 cmd 視窗, 執行以下命令</span><br><span class="line">$ ssh bigred@&lt;alp.m1 IP&gt;</span><br></pre></td></tr></table></figure>
+
+<p>安裝 Kubernetes 要用的一些管理命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apk update; sudo apk add kubeadm kubelet kubectl --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>kubeadm</code>，建置 K8S 會用到的命令</li>
+<li><code>kubelet</code>，將 <code>CRI-O</code> 建立出來的 Container 包成 pod 的程式</li>
+<li><code>kubectl</code>，controls the Kubernetes cluster manager，<a target="_blank" rel="noopener" href="https://jamesdefabia.github.io/docs/user-guide/kubectl-overview/">kubectl-overview 官網介紹連結</a></li>
+<li><code>apk add</code> 命令補充<ul>
+<li><code>--repository &lt;REPO&gt;</code>，指定其他套件下載網址</li>
+<li><code>--update-cache</code>， Alias for ‘–cache-max-age 1’</li>
+<li><code>--allow-untrusted</code>，安裝帶有不受信任簽名或沒有簽名的套件</li>
+</ul>
+</li>
+<li>因為手工建立 K8S 的關係，所以可以用到最新的版本</li>
+</ul>
+<h2 id="建立-K8S-Master"><a href="#建立-K8S-Master" class="headerlink" title="建立 K8S Master"></a>建立 K8S Master</h2><p>m1 的 IP</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo $IP</span><br><span class="line">192.168.61.4</span><br></pre></td></tr></table></figure>
+
+<p>透過 <code>kubeadm</code> 來設定 Master 主機</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo kubeadm init --service-cidr 10.98.0.0/24 --pod-network-cidr 10.244.0.0/16  --service-dns-domain=k8s.org --apiserver-advertise-address $IP</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>kubeadm init</code> ，設定 Kubernetes control plane ( m1 主機 )，將它初始化</li>
+<li><code>--service-cidr 10.98.0.0/24</code>，K8S <strong>對外</strong>提供服務的 IP 位址，給我們辦公室的同仁們，機房的其他應用系統，甚至 Internet 上面的使用者，來提供這樣的服務，我們設定的是<code>10.98.0.0/24</code> ，所以代表我們 Kubernetes 做出來的服務最多可以有 254 個。</li>
+<li><code>--pod-network-cidr 10.244.0.0/16</code>，pod 的 IP 位址範圍，可以有 254 * 254 &#x3D; 64516 個 pod。 </li>
+<li>以上兩個設定其實只要是私有 IP 就 ok 。</li>
+<li><code>--service-dns-domain=k8s.org</code>，因為 K8S 內部有 Service Discovery ，所以要設定 Domain Name ，對外的應用系統連接網址使用此設定名稱，在外面做案子的話，就用公司的 Domain Name 來命名。</li>
+<li><code>--apiserver-advertise-address $IP</code>，將 m1 主機的 IP 位址 設定為 Kubernetes Master 的 <code>API Server</code> 的 IP</li>
+<li><a target="_blank" rel="noopener" href="https://www.densify.com/kubernetes-autoscaling/kubernetes-service-discovery">Kubernetes Service Discovery 介紹連結</a></li>
+</ul>
+<p>將 <code>Kubelet</code> 設定為系統自動啟動</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo rc-update add kubelet default</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>為何 <code>Kubelet</code>，需設定為系統自動啟動 ?<br>因為它是一個 Daemon ，需要在背景一直 running 來等待 Scheduler 來找他。</li>
+</ul>
+<p>檢查 pod 的 image</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ sudo podman images</span><br><span class="line">REPOSITORY                                                TAG         IMAGE ID      CREATED        SIZE</span><br><span class="line">k8s.gcr.io/kube-apiserver                                 v1.24.3     d521dd763e2e  3 weeks ago    131 MB</span><br><span class="line">k8s.gcr.io/kube-proxy                                     v1.24.3     2ae1ba6417cb  3 weeks ago    112 MB</span><br><span class="line">k8s.gcr.io/kube-controller-manager                        v1.24.3     586c112956df  3 weeks ago    121 MB</span><br><span class="line">k8s.gcr.io/kube-scheduler                                 v1.24.3     3a5aa3a515f5  3 weeks ago    52.3 MB</span><br><span class="line">docker.io/rancher/mirrored-flannelcni-flannel             v0.19.0     c4300d1c88c8  4 weeks ago    63.3 MB</span><br><span class="line">docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin  v1.1.0      fcecffc7ad4a  2 months ago   8.37 MB</span><br><span class="line">k8s.gcr.io/etcd                                           3.5.3-0     aebe758cef4c  3 months ago   301 MB</span><br><span class="line">docker.io/rancher/local-path-provisioner                  v0.0.22     e16d1e3a1066  4 months ago   35.3 MB</span><br><span class="line">k8s.gcr.io/pause                                          3.7         221177c6082a  5 months ago   718 kB</span><br><span class="line">k8s.gcr.io/coredns/coredns                                v1.8.6      a4ca41631cc7  10 months ago  47 MB</span><br><span class="line">registry.k8s.io/pause                                     3.6         6270bb605e12  11 months ago  690 kB</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>docker.io/rancher/mirrored-flannelcni-flannel:v1.1.0</code></li>
+<li><code>docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin:v0.19.0</code></li>
+<li>以上兩片 image 是陳老師先幫我們準備好的</li>
+</ul>
+<h2 id="設定-K8S-Master"><a href="#設定-K8S-Master" class="headerlink" title="設定 K8S Master"></a>設定 K8S Master</h2><p>將 bigred 設成 K8S 管理者</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir -p $HOME/.kube; sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config; sudo chown $(id -u):$(id -g) $HOME/.kube/config</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>先在使用者家目錄下建立一個 <code>.kube</code> 的目錄</li>
+<li>然後拷貝 <code>admin.conf</code> 這個 K8S 管理者的設定檔到 使用者家目錄下 <code>.kube</code> 目錄裡面的 <code>config</code> 這個檔案裡面</li>
+<li>最後將 <code>config</code> 的權限設為 當前使用者的權限</li>
+<li><code>cp -i</code> ，覆蓋前會提示</li>
+<li><code>id -u</code> ，顯示當前使用者的 UID</li>
+<li><code>id -g</code> ，顯示當前使用者群組的 GID</li>
+</ul>
+<p>設定 K8S Master 可以執行 Pod</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl taint node m1 node-role.kubernetes.io/control-plane:NoSchedule-</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>K8s 的每個 node 都會有標記 taint ，而 m1 這台 node 在 K8S 初始化的時候會被標記 <code>NoSchedule</code> 的 taint ，有了這個 taint 之後， pod 就不會建在 m1 的 node 上，這時候在規則裡面改成 <code>NoSchedule-</code> ， 就能破格。</li>
+</ul>
+<p>Kubernetes 1.24.4 版還要再執行以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl taint node m1 node-role.kubernetes.io/master:NoSchedule-</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="安裝-Flannel-網路套件"><a href="#安裝-Flannel-網路套件" class="headerlink" title="安裝 Flannel 網路套件"></a>安裝 Flannel 網路套件</h2><p>flannel 網路套件，動用的技術 : Static Route</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>因建立 K8S 設定 POD 的 Subnet 為 10.244.0.0&#x2F;16, 而 flannel 內定網路 ID 為 10.244.0.0&#x2F;16, 所以不需修改 kube-flannel.yml</li>
+</ul>
+<p>安裝好後，將 m1 主機重新開機</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo reboot</span><br></pre></td></tr></table></figure>
+
+<h2 id="檢視-Kubernetes-系統狀態"><a href="#檢視-Kubernetes-系統狀態" class="headerlink" title="檢視 Kubernetes 系統狀態"></a>檢視 Kubernetes 系統狀態</h2><p>檢查 node 的狀態</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get nodes</span><br><span class="line">NAME   STATUS   ROLES           AGE   VERSION</span><br><span class="line">m1     Ready    control-plane   74m   v1.24.3</span><br></pre></td></tr></table></figure>
+
+<p>檢查 kube-system 這個 Namespace 裡面 pod 的狀態</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods -n kube-system</span><br><span class="line">NAME                         READY   STATUS    RESTARTS   AGE</span><br><span class="line">coredns-6d4b75cb6d-grkmp     1/1     Running   1          37m</span><br><span class="line">coredns-6d4b75cb6d-xlgfd     1/1     Running   1          37m</span><br><span class="line">etcd-m1                      1/1     Running   1          37m</span><br><span class="line">kube-apiserver-m1            1/1     Running   1          37m</span><br><span class="line">kube-controller-manager-m1   1/1     Running   1          37m</span><br><span class="line">kube-proxy-ftk9d             1/1     Running   1          37m</span><br><span class="line">kube-scheduler-m1            1/1     Running   1          37m</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意！這邊的 Namespace 與 linux 的 namespace 不同</strong></p>
+<ul>
+<li><code>-n</code> ， namespace ，K8S 系統的運作空間</li>
+<li><code>coredns</code>，供外部通訊所使用的 Domain Name Server ( 負責做 Service Discovery )</li>
+<li><code>kube-apiserver-m1</code>，負責接收使用者的命令</li>
+<li><code>etcd-m1</code>，紀錄 K8S 系統的 Metadata</li>
+<li><code>kube-scheduler-m1</code>，負責啟動 Pod</li>
+<li><code>kube-controller-manager-m1</code>，負責監控與維護 Pod</li>
+<li><code>flannel</code> + <code>kube-proxy</code> 可以讓 pod 在不同 nodes 之間網路能互通有無</li>
+</ul>
+<p>看 m1 主機維運系統的 4 個 pod 的 Container 狀態</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ crictl ps -a</span><br></pre></td></tr></table></figure>
+
+<p>output : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">CONTAINER           IMAGE                                                              CREATED             STATE               NAME                      ATTEMPT             POD ID              POD</span><br><span class="line">45c3af598722d       a4ca41631cc7ac19ce1be3ebf0314ac5f47af7c711f17066006db82ee3b75b03   9 minutes ago       Running             coredns                   1                   1a9c8965ba001       coredns-6d4b75cb6d-xlgfd</span><br><span class="line">54317fe6de819       a4ca41631cc7ac19ce1be3ebf0314ac5f47af7c711f17066006db82ee3b75b03   9 minutes ago       Running             coredns                   1                   6581b3ba9f2b8       coredns-6d4b75cb6d-grkmp</span><br><span class="line">06f7e1a7dc5c4       252b2c3ee6c86b9cba63c9bddc2d1638d4152b5713009ff9397498014d06178e   10 minutes ago      Running             kube-flannel              1                   b0b014f1d4cb6       kube-flannel-ds-r5p9q</span><br><span class="line">f32b9416f5600       2ae1ba6417cbcd0b381139277508ddbebd0cf055344b710f7ea16e4da954a302   10 minutes ago      Running             kube-proxy                1                   f5b632754d09e       kube-proxy-ftk9d</span><br><span class="line">81fa3b96f83f4       252b2c3ee6c86b9cba63c9bddc2d1638d4152b5713009ff9397498014d06178e   10 minutes ago      Exited              install-cni               1                   b0b014f1d4cb6       kube-flannel-ds-r5p9q</span><br><span class="line">38cdbe521c340       fcecffc7ad4af70c8b436d45688771e0562cbd20f55d98581ba22cf13aad360d   10 minutes ago      Exited              install-cni-plugin        1                   b0b014f1d4cb6       kube-flannel-ds-r5p9q</span><br><span class="line">46ac2b6b44a73       586c112956dfc2de95aef392cbfcbfa2b579c332993079ed4d13108ff2409f2f   10 minutes ago      Running             kube-controller-manager   1                   1132c83fc98fc       kube-controller-manager-m1</span><br><span class="line">adbf8a41e4cb8       d521dd763e2e345a72534dd1503df3f5a14645ccb3fb0c0dd672fdd6da8853db   10 minutes ago      Running             kube-apiserver            1                   e2caae9b8b044       kube-apiserver-m1</span><br><span class="line">ee38c42a981d8       aebe758cef4cd05b9f8cee39758227714d02f42ef3088023c1e3cd454f927a2b   10 minutes ago      Running             etcd                      1                   dc7ecd13048ef       etcd-m1</span><br><span class="line">794fdd119dd8d       3a5aa3a515f5d28b31ac5410cfaa56ddbbec1c4e88cbdf711db9de6bbf6b00b0   10 minutes ago      Running             kube-scheduler            1                   ded0bada61429       kube-scheduler-m1</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+<h2 id="w1-w2-安裝-kubelet-及-kubeadm-命令"><a href="#w1-w2-安裝-kubelet-及-kubeadm-命令" class="headerlink" title="w1, w2 安裝 kubelet 及 kubeadm 命令"></a>w1, w2 安裝 kubelet 及 kubeadm 命令</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># ssh 到 w1 主機安裝 kubelet 及 kubeadm 命令</span><br><span class="line">$ ssh w1 &#x27;sudo apk add kubeadm kubelet --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted&#x27;</span><br><span class="line"></span><br><span class="line"># ssh 到 w2 主機安裝 kubelet 及 kubeadm 命令</span><br><span class="line">$ ssh w2 &#x27;sudo apk add kubeadm kubelet --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted&#x27;</span><br><span class="line"></span><br><span class="line"># ssh 到 w1, w2 主機，將 kubelet 設成 Deamon</span><br><span class="line">$ ssh w1 &#x27;sudo rc-update add kubelet default&#x27;; ssh w2 &#x27;sudo rc-update add kubelet default&#x27;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>work node 不裝 <code>kubectl</code> 的原因是因為我們規劃的管理主機在 m1 ，work node 不需要管理其他機器。</li>
+</ul>
+<h2 id="w1-w2-加入-K8S-Cluster"><a href="#w1-w2-加入-K8S-Cluster" class="headerlink" title="w1, w2 加入 K8S Cluster"></a>w1, w2 加入 K8S Cluster</h2><p>在 m1 的終端機, 執行以下命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 設定 JOIN 環境變數</span></span><br><span class="line">$ <span class="built_in">export</span> JOIN=$(<span class="built_in">echo</span> <span class="string">&quot; sudo `kubeadm token create --print-join-command 2&gt;/dev/null`&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 將 w1 主機，join 到 m1 的這個 k8s 的 Cluster</span></span><br><span class="line">$ ssh w1 <span class="string">&quot;<span class="variable">$JOIN</span>&quot;</span>; ssh w2 <span class="string">&quot;<span class="variable">$JOIN</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 將 w2 主機，join 到 m1 的這個 k8s 的 Cluster</span></span><br><span class="line">$ ssh w1 sudo reboot; ssh w2 sudo reboot</span><br></pre></td></tr></table></figure>
+
+<p>:::info</p>
+<p>:::spoiler JOIN 變數解析 </p>
+<p>描述 : 將 w1 和 w2 的主機，join 到 K8S 系統的命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ echo &quot; sudo `kubeadm token create --print-join-command`&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>--print-join-command</code>，不要只打印令牌，而是打印使用令牌加入集群所需的完整 “kubeadm join” 標誌。</li>
+</ul>
+<p>output : </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo kubeadm join 192.168.61.4:6443 --token tx06v1.le8z0pagl0ltfycz --discovery-token-ca-cert-hash sha256:0f4c243af9e70715a72f30ba0bc5cc44210f1b8fc66447cde16bad3a8c48d691</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/">Kubernetes 官網 kubeadm token 的說明連結 </a></li>
+<li><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/admin/bootstrap-tokens/">kubeadm token 補充</a></li>
+</ul>
+<p>:::</p>
+<h2 id="設定-K8S-Worker-標籤"><a href="#設定-K8S-Worker-標籤" class="headerlink" title="設定 K8S Worker 標籤"></a>設定 K8S Worker 標籤</h2><p>在 m1 終端機, 執行以下命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get nodes</span><br><span class="line">NAME   STATUS   ROLES           AGE     VERSION</span><br><span class="line">m1     Ready    control-plane   76m     v1.24.3</span><br><span class="line">w1     Ready    &lt;none&gt;          4m21s   v1.24.3</span><br><span class="line">w2     Ready    &lt;none&gt;          79s     v1.24.3</span><br></pre></td></tr></table></figure>
+
+<p>即使此時 w1 和 w2 <code>notready</code> ，也可以貼標籤，因為它是對 <code>etcd</code> 的資料庫作業。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl label node w1 node-role.kubernetes.io/worker=; kubectl label node w2 node-role.kubernetes.io/worker=</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>對 w1 和 w2 node 的 role 貼上 worker 的標籤</li>
+<li><code>worker=</code>， worker 的等號後面還可以放更詳細的說明，例如 : Asia, Taipei… 等</li>
+</ul>
+<p>檢查是否符合預期</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get nodes</span><br><span class="line">NAME   STATUS   ROLES           AGE   VERSION</span><br><span class="line">m1     Ready    control-plane   75m   v1.24.3</span><br><span class="line">w1     Ready    worker          37m   v1.24.3</span><br><span class="line">w2     Ready    worker          36m   v1.24.3</span><br></pre></td></tr></table></figure>
+
+
+
+<hr>
+<h1 id="Kubernetes-檢測"><a href="#Kubernetes-檢測" class="headerlink" title="Kubernetes 檢測"></a>Kubernetes 檢測</h1><h2 id="建立-K8S-POD"><a href="#建立-K8S-POD" class="headerlink" title="建立 K8S POD"></a>建立 K8S POD</h2><p>kubectl run 產生 pod ，pod 名字 nginx</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run nginx --image=quay.io/cloudwalker/nginx</span><br><span class="line">pod/nginx created --&gt; ( 高機率騙人，有可能產生出來是掛的 )</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>kubectl run</code>，Create and run a particular image in a pod.</li>
+<li><code>--image=&#39;&#39;</code>，The image for the container to run.</li>
+</ul>
+<p>檢查是否符合預期</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY   STATUS              RESTARTS   AGE</span><br><span class="line">nginx   0/1     ContainerCreating   0          8s</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY   STATUS    RESTARTS   AGE</span><br><span class="line">nginx   1/1     Running   0          52s</span><br><span class="line"></span><br><span class="line">$ kubectl get pods -o wide</span><br><span class="line">NAME    READY   STATUS    RESTARTS   AGE   IP           NODE   NOMINATED NODE   READINESS GATE</span><br><span class="line">nginx   1/1     Running   0          74s   10.244.1.3   w1     &lt;none&gt;     &lt;none&gt;</span><br><span class="line">-o output </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>READY 的 1&#x2F;1 </li>
+<li>分子 -&gt; 幾台正在 running 的 Container ; 分母 1 個 pod 有幾台 Container</li>
+<li><code>-o wide</code> ，可以看到 pod 的 ip 位址，和所在的 node</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">$ curl -s http://10.244.1.3 | grep &#x27;Welcome&#x27;</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line"># 刪除 pod &lt;pod name&gt;</span><br><span class="line">$ kubectl delete pods nginx</span><br><span class="line"></span><br><span class="line">$ kubectl run nginx --image=quay.io/cloudwalker/nginx</span><br><span class="line">pod/nginx created</span><br><span class="line"></span><br><span class="line">$ kubectl run a1 --image=quay.io/cloudwalker/alpine</span><br><span class="line">pod/a1 created</span><br><span class="line"></span><br><span class="line">## 失敗原因是因為 </span><br><span class="line">## quay.io/cloudwalker/alpine 這張光碟片第一個跑的命令是 sh，</span><br><span class="line">## 所以後面給一個虛擬終端機</span><br><span class="line">$ kg pods</span><br><span class="line">NAME    READY   STATUS             RESTARTS      AGE</span><br><span class="line">a1      0/1     CrashLoopBackOff   2 (18s ago)   44s</span><br><span class="line"></span><br><span class="line"># -it ，給一個個虛擬終端機</span><br><span class="line"># --rm ，pod 停止就刪除 pod</span><br><span class="line">$ kubectl run a1 --rm --image=quay.io/cloudwalker/alpine -it</span><br><span class="line"></span><br><span class="line">$ kubectl exec -it a1 -- sh</span><br><span class="line">## 要對 pod 下達命令一定要在 -- 後面</span><br><span class="line">/ # curl http://10.244.1.3</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">...中間省略</span><br><span class="line">&lt;/html&gt;</span><br><span class="line"></span><br><span class="line">/ # exit</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>兩個 pod 之間可以互通有無</li>
+<li>工作主機 和 master 主機也可以的到 nginx 那台 pod<br><img src="https://i.imgur.com/wyEgvEA.png"><br><img src="https://i.imgur.com/wlGqQgP.png"><br><img src="https://i.imgur.com/GBHb05F.png"></li>
+</ul>
+<h6 id="tags-系統工程"><a href="#tags-系統工程" class="headerlink" title="tags: 系統工程"></a>tags: <code>系統工程</code></h6>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%B3%BB%E7%B5%B1%E5%B7%A5%E7%A8%8B/" rel="tag"># 系統工程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Kubernetes-First-Steps/" rel="prev" title="Kubernetes-First-Steps">
+      <i class="fa fa-chevron-left"></i> Kubernetes-First-Steps
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Kubernetes%20Init%20with%20Config.yaml/" rel="next" title="Kubernetes Init with Config.yaml">
+      Kubernetes Init with Config.yaml <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-Cluster-build"><span class="nav-number">1.</span> <span class="nav-text">Kubernetes-Cluster-build</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-K8S-Master"><span class="nav-number">1.1.</span> <span class="nav-text">建立 K8S Master</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A8%AD%E5%AE%9A-K8S-Master"><span class="nav-number">1.2.</span> <span class="nav-text">設定 K8S Master</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%9D-Flannel-%E7%B6%B2%E8%B7%AF%E5%A5%97%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">安裝 Flannel 網路套件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AA%A2%E8%A6%96-Kubernetes-%E7%B3%BB%E7%B5%B1%E7%8B%80%E6%85%8B"><span class="nav-number">1.4.</span> <span class="nav-text">檢視 Kubernetes 系統狀態</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#w1-w2-%E5%AE%89%E8%A3%9D-kubelet-%E5%8F%8A-kubeadm-%E5%91%BD%E4%BB%A4"><span class="nav-number">1.5.</span> <span class="nav-text">w1, w2 安裝 kubelet 及 kubeadm 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#w1-w2-%E5%8A%A0%E5%85%A5-K8S-Cluster"><span class="nav-number">1.6.</span> <span class="nav-text">w1, w2 加入 K8S Cluster</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A8%AD%E5%AE%9A-K8S-Worker-%E6%A8%99%E7%B1%A4"><span class="nav-number">1.7.</span> <span class="nav-text">設定 K8S Worker 標籤</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-%E6%AA%A2%E6%B8%AC"><span class="nav-number">2.</span> <span class="nav-text">Kubernetes 檢測</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-K8S-POD"><span class="nav-number">2.1.</span> <span class="nav-text">建立 K8S POD</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#tags-%E7%B3%BB%E7%B5%B1%E5%B7%A5%E7%A8%8B"><span class="nav-number">2.1.0.0.0.1.</span> <span class="nav-text">tags: 系統工程</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Antony Cehn</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Antony.Chen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
