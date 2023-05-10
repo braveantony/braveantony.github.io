@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"braveantony.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content=".indent-title-1{   margin-left: 1em;      Kubernetes 新一代的雲端作業系統 管理實體電腦或虛擬電腦裡面的多台 Container 由 Google 公司設計">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes Overview">
+<meta property="og:url" content="https://braveantony.github.io/braveantony.github.io/Kubernetes%20Overview/index.html">
+<meta property="og:site_name" content="Antony 的學習筆記">
+<meta property="og:description" content=".indent-title-1{   margin-left: 1em;      Kubernetes 新一代的雲端作業系統 管理實體電腦或虛擬電腦裡面的多台 Container 由 Google 公司設計">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/FZgie9K.png">
+<meta property="og:image" content="https://i.imgur.com/FuRjMvt.png">
+<meta property="og:image" content="https://i.imgur.com/Ub04GNj.png">
+<meta property="og:image" content="https://i.imgur.com/hG5rPqX.png">
+<meta property="og:image" content="https://i.imgur.com/CqaHh8u.png">
+<meta property="og:image" content="https://i.imgur.com/f9hSk3v.png">
+<meta property="og:image" content="https://i.imgur.com/kqBN7pH.png">
+<meta property="og:image" content="https://i.imgur.com/FzVQ9Et.png">
+<meta property="og:image" content="https://i.imgur.com/xR2zoMU.png">
+<meta property="og:image" content="https://i.imgur.com/G4ySwDN.png">
+<meta property="article:published_time" content="2022-08-30T19:02:58.000Z">
+<meta property="article:modified_time" content="2023-05-10T16:17:52.622Z">
+<meta property="article:author" content="Antony Cehn">
+<meta property="article:tag" content="系統工程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/FZgie9K.png">
+
+<link rel="canonical" href="https://braveantony.github.io/braveantony.github.io/Kubernetes%20Overview/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Kubernetes Overview | Antony 的學習筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Antony 的學習筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">這個網站將紀錄持續記錄我學習到各種知識的筆記</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://braveantony.github.io/braveantony.github.io/Kubernetes%20Overview/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Antony Cehn">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Antony 的學習筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kubernetes Overview
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-31 03:02:58" itemprop="dateCreated datePublished" datetime="2022-08-31T03:02:58+08:00">2022-08-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-05-11 00:17:52" itemprop="dateModified" datetime="2023-05-11T00:17:52+08:00">2023-05-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index"><span itemprop="name">Kubernetes</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <style>
+.indent-title-1{
+  margin-left: 1em;
+</style>
+
+
+<div class="indent-title-1">
+
+<h1 id="Kubernetes-新一代的雲端作業系統"><a href="#Kubernetes-新一代的雲端作業系統" class="headerlink" title="Kubernetes 新一代的雲端作業系統"></a>Kubernetes 新一代的雲端作業系統</h1><ul>
+<li>管理實體電腦或虛擬電腦裡面的多台 Container</li>
+<li>由 Google 公司設計<span id="more"></span>
+<img src="https://i.imgur.com/FZgie9K.png"></li>
+</ul>
+</div>
+
+
+
+<h2 id="Kubernetes-目標"><a href="#Kubernetes-目標" class="headerlink" title="Kubernetes 目標"></a><strong>Kubernetes 目標</strong></h2><p><font color=red><strong>幫企業 Run Application ( 應用系統 ) Run 的長長久久、穩穩當當</strong></font></p>
+<h2 id="Kubernetes-的功能介紹"><a href="#Kubernetes-的功能介紹" class="headerlink" title="Kubernetes 的功能介紹"></a>Kubernetes 的功能介紹</h2><p>Containerisation (貨櫃化) 是一種應用程式部署的方法，可以讓開發人員更靈活地管理應用程式的部署。然而，應用程式的顆粒度越小，其組成的元件就越多，因此需要一些管理來處理。</p>
+<p>仍然需要注意將特定數量的 Container 部署到特定節點上、管理 Container 之間的網路、遵循資源分配、隨著應用程式成長而移動 Container 等等。</p>
+<p>如今，幾乎所有的應用程序都需要對以下事項作出回答，如</p>
+<ul>
+<li><strong>Replication of components (Pod)</strong><ul>
+<li>同樣的 pod 可以複製很多台出來 (本尊與分身的概念，分身也會做事)</li>
+<li>叢集，同一個服務會有好幾個 pod 來提供服務，避免單點損毀的情況，提高可用性 (HA) 與容錯</li>
+</ul>
+</li>
+<li><strong>Auto-scaling</strong> <ul>
+<li>自動橫向擴充，可以依照暴漲的流量擴充 pod</li>
+<li>一開始只做一個本尊和一個分身的 pod (兩個相同的應用系統再跑)，當偵測到同一時間有大量連線時，會自動長出一樣的應用系統出來一起作業，連線恢復正常時，多的分身會消失</li>
+</ul>
+</li>
+<li><strong>Load balancing</strong> <ul>
+<li>平衡負載，讓每個 pod 都能平均分工</li>
+</ul>
+</li>
+<li>Replication of components + Auto-scaling + Load balancing 能達到<strong>隨需擴增</strong></li>
+<li><strong>Rolling updates</strong><ul>
+<li>專門給程式設計師使用，因增加或修改功能會更新程式版本，也就是<font color=red><strong>進版或退版</strong></font></li>
+<li>檢查程式碼有無死邏輯，當服務發現有異常時，程式會退版</li>
+</ul>
+</li>
+<li><strong>Logging across components</strong><ul>
+<li>每台 pod 運作的 log 檔都會記錄下來</li>
+<li>grafana ( 發音 : 寡發哪 ) ： 透過儀錶板來監控所有的 Container</li>
+</ul>
+</li>
+<li><strong>Monitoring and health checking</strong><ul>
+<li>透過 log 來監控 pod 的狀態和對 pod 進行健康檢查</li>
+</ul>
+</li>
+<li>由於在整個 K8S Cluster 上面會跑多個應用系統，所以需要 Logging across components + Monitoring and health checking 來幫助我們維運</li>
+<li><strong>Service discovery (DNS Server)</strong><ul>
+<li>DNS Server 的功能 : 將人看得懂的網站網址 (URL)，變成 IP 位址</li>
+<li>由 CoreDNS System 得知，你的 Service 會對到哪一個 pod，會將 Service 的 Domain name 轉成綁在 Service 上的 pod 的 IP 位址。</li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-tw/%E5%9F%9F%E5%90%8D">Domain name wiki link</a></li>
+</ul>
+</li>
+<li><strong>Authentication</strong><ul>
+<li>身分認證，透過憑證 ( 公鑰 and 私鑰 ) 作業</li>
+<li>在 K8s 中沒人在打帳號密碼，全靠憑證作業。</li>
+</ul>
+</li>
+</ul>
+<p>Google has given a combined solution for that which is Kubernetes, or how it’s shortly called – K8s.</p>
+<p><strong>甚麼時候會需要用到隨需擴充?</strong></p>
+<ul>
+<li>網站伺服器，遇到多人大量同時連線時會需要，例如 : 演唱會訂票系統, 台鐵在節慶時的訂票系統</li>
+<li>擴充的方式 : 金絲雀 ( 之後會學的 )…等</li>
+</ul>
+<h2 id="雲原生作業系統-Kubernetes-大架構"><a href="#雲原生作業系統-Kubernetes-大架構" class="headerlink" title="雲原生作業系統 - Kubernetes 大架構"></a>雲原生作業系統 - Kubernetes 大架構</h2><p><img src="https://i.imgur.com/FuRjMvt.png"></p>
+<p>這張圖中，有3台虛擬電腦</p>
+<ul>
+<li>kubernetes master 的 hostname : m1 </li>
+<li>Worker node 的 hostname : w1 和 w2<ul>
+<li>可以視 Application 的複雜程度新增 Worker node 主機</li>
+</ul>
+</li>
+<li><font color=blue><strong>kubernetes 最小的運作單位為 pod ( 豆莢 )</strong></font><ul>
+<li>pod 由一台或以上的 Container 組成</li>
+<li>同一個 pod 裡的多台 Container 會共用同一張網路卡，網路卡對內透過記憶體溝通（localhost），對外有同一個 Pod 的 IP 位址 。</li>
+<li>一個 pod 裡面 3 台 Container 跑的 Application（舉例，Container 1 跑 nginx 的網站; Container 2 跑 MYSQL 資料庫; Container 3 跑 log Server ）&#x3D; &gt; 可以理解為 3 個 Container 跑企業用的 Application 在一個 pod 裡面。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Master-node"><a href="#Master-node" class="headerlink" title="Master node"></a>Master node</h3><ul>
+<li>Master node 裡一定會有 4 個 pod 分別是 <code>API Server</code> 、<code>Secheduler</code> 、<code>Controller-Manager</code> 和 <code>etcd</code></li>
+<li><code>API Server</code><ul>
+<li>負責接受前端管理者透過 CLI ( Command Line Interface, 命令模式 ) 下達的命令，例如 : <code>kubectl</code> 、<code>kubeadm</code>…等</li>
+<li>也接受 Web UI ，在瀏覽器的網頁上點點選選，對 <code>API Server</code> 下達命令，例如 : <a target="_blank" rel="noopener" href="https://rancher.com/">Rancher</a> <blockquote>
+<p>Rancher 這家公司還有推出 K3s ( 無肥肉、身材好、精實型的 K8s )</p>
+</blockquote>
+</li>
+<li>Authentication 身分認證，你是誰</li>
+<li>Authorization 授權，你有什麼權限，可以做什麼事情</li>
+</ul>
+</li>
+<li><code>Secheduler</code><ul>
+<li>負責安排 pod ( 企業的 application ) 要在哪一台工作主機上 run</li>
+<li>安排的方式不只看記憶體，會有更複雜的演算法，溝通的對象為該工作主機的 <code>kubelet</code></li>
+</ul>
+</li>
+<li><code>Controller-Manager</code> <ul>
+<li>會負責照顧 node 裡面的 pod ，如果一台 node 裡面的 pod 掛了，它會去請 <code>Scheduler</code> 幫我們把 pod 建立回來，但是不一定會在原來的 node 把 pod 建立回來。 ( Kubernetes 內建的容錯功能 )</li>
+<li>會監控 pod 的狀態，如果發現很多 connection 連到 pod ，它就會請 <code>Sechedular</code>， 幫忙把 pod 複製出來，也就是隨需擴增。</li>
+</ul>
+</li>
+<li><code>etcd</code> <ul>
+<li>一個資料庫。</li>
+<li>存放整個 K8S 系統運作的重要資料，e.g., node 裡面會存&#x2F;跑什麼 application, pod 叫什麼名字 …等。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Worker-node"><a href="#Worker-node" class="headerlink" title="Worker node"></a>Worker node</h3><ul>
+<li><code>kubelet</code> <ul>
+<li>在背景執行的程序</li>
+<li>把 Container-Runtime-Engine (Podman, Docker, CRI-O) 做出來的一個或多個 Container 包成一個 pod</li>
+<li>實際上 Podman, Docker, CRI-O 會透過 runc&#x2F;crun (有人根據 OCI 組織制定的 Runtime spec 寫出來的程式) 來將 Container 建立出來。</li>
+<li>Docker 用的是 runc 來建立 Container，Podman 用的是 crun ，CRI-O 預設是用 runc</li>
+<li>runc&#x2F;crun 在建立 Container 時，一定會需要 bundle ( runtime 設定檔 + rootfs 檔案系統目錄 )</li>
+</ul>
+</li>
+<li><code>Kube-proxy</code> ( 哭 ㄅ ㄆㄨㄚ seeˇ )<ul>
+<li>一個 pod</li>
+<li>讓不同 node 中 pod 的網路能互相連接 </li>
+<li>在我們的環境中，<code>kube-proxy</code> 會透過 Flannel 網路套件，來讓 Pods 跨主機互通有無</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><font color=blue>Master Node 只要執行 <code>kubelet</code> ，其實也可以扮演 worker 的角色</font></p>
+</blockquote>
+<h3 id="情境敘述"><a href="#情境敘述" class="headerlink" title="情境敘述"></a>情境敘述</h3><ul>
+<li><p>我們 ( 前端管理者 ) 打 <code>kubectl</code> 這個命令告訴 <code>API Server</code>，我有一個 pod 要 run， <code>API Server</code> 接收到後，會去找 <code>Scheduler</code>，請他安排，<code>Secheduler</code> 會去找看哪一台 node 最閒，然後會去通知那台 node 裡面的 <code>kubelet</code> ，叫他去請 Container-Runtime-Engine 幫我們產生 Container 。</p>
+</li>
+<li><p>K8s 的 pod 在外面工作，我們稱它為 Solution ( 解決方案 ) ，注意 ! 它不能稱為一台電腦，因為 pod 是由一台或多台 Container 組成， Container 是一台電腦，pod 就是很多台電腦堆疊起來的一整個機櫃，舉例 : 應用系統由一個或多個 process 組成，而 pod 就是一個企業所需的應用系統，pod 裡面的 Container 就是 process 。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Kubernetes-CRI-的架構演進圖"><a href="#Kubernetes-CRI-的架構演進圖" class="headerlink" title="Kubernetes CRI 的架構演進圖"></a>Kubernetes CRI 的架構演進圖</h2><p><img src="https://i.imgur.com/Ub04GNj.png"></p>
+<ul>
+<li>最上面是第一代的流程，因為 K8S 不紅，所以自己寫了一個 <code>Dockershim</code> 來跟 <code>Docker Engine</code> 來溝通，建立 Container ，透過 <code>Docker Engine</code> 來做到內部網路，所以速度慢，效率差。</li>
+<li>第二代：把 <code>Docker</code> 給砍掉了，並且 <code>K8S</code> 自己寫了 <code>CRI-Cotainerd</code> 來跟 <code>Containerd</code> 做溝通，不依賴 <code>Docker Engine</code></li>
+<li>第三代：<code>Containerd</code> 討好 K8S ，直接提供 <code>CRI plugin</code> ( Container Runtime Interface, 內建一個介面，根據 CRI 標準寫的程式 ) 給 K8S，讓 K8S 可以直接使用 <code>Containerd</code>，但因為 <code>Containerd</code> 本身還有給 <code>Docker</code> 平台使用，所以制定 image 的標準也有 <code>Docker</code> 的，跟下面最新的架構比，效率還是差了點。</li>
+<li>目前：使用 CRI-O 這個專案，特別為 K8S 量身訂做，直接翻譯 <code>kubelet</code> 的話，效率最優。<ul>
+<li>而且直接對 runc 溝通，不用再經過好多流程才產生 container  </li>
+<li>CRI-O 是 open source 的專案，老師目前使用最下面的架構，kubernetes 會直接透過 CRI-O 來跟 rnc 溝通產生 Container<font color=red></li>
+</ul>
+</li>
+<li>結論<ul>
+<li>K8S 不需要 <code>Docker</code> 就可以建立和跑 Container 了</li>
+<li>目前 Google Cloud 、 AWS 和 Microsoft Azure 三大公有雲使用的是第三代的架構，Containerd 直接和 kubernetes 做溝通請 runc 產生 Container。</li>
+<li><code>Docker</code> 並沒有遵循 CRI 的標準</font></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="選擇-Kubernetes-Cluster"><a href="#選擇-Kubernetes-Cluster" class="headerlink" title="選擇 Kubernetes Cluster"></a>選擇 Kubernetes Cluster</h1><ul>
+<li>Cluster 叢集</li>
+<li>kubernetes Cluster 就是 kubernetes 會用到的電腦，代表 K8S 是由多台電腦組成的作業系統</li>
+</ul>
+<h2 id="Managed-Kubernetes-Services"><a href="#Managed-Kubernetes-Services" class="headerlink" title="Managed Kubernetes Services"></a>Managed Kubernetes Services</h2><p>意思是有人已經幫你設好了 Kubernetes</p>
+<ul>
+<li><strong>雲端商的 Kubernetes</strong>  (<font color=red><strong>資料安全上會有問題</strong></font>)<ul>
+<li>Amazon Elastic Kubernetes Service | Amazon 做出來的 K8S ，簡稱 : EKS&#x2F;Amazon EKS</li>
+<li>Google Kubernetes Engine | Google 做出來的 K8S ，簡稱 : GKE</li>
+<li>Azure Kubernetes Service | Microsoft 做出來的 K8S ，簡稱 : AKS</li>
+<li>服務供應商也會有像是 <code>quay.io</code> 的 image 管理中心，供使用者 <code>Pull</code>、<code>Push image</code>，還會有 <code>CI/CD</code> ，讓程式設計師有健身房可以用，達到敏捷開發。</li>
+<li>不同雲端供應商都追加了不同的系統功能，但其核心都是 Kubernetes Cluster</li>
+</ul>
+</li>
+<li><strong>K8S 商軟（distribution (“distro”) of Kubernetes）</strong><ul>
+<li>由大公司幫我們做好 K8S Cluster ，我們只需要付錢錢，就可已買回來自己管理</li>
+<li>RedHat OpenShift | RedHat 做的 Kubernetes</li>
+<li>VMware Tanzu ｜ VMware 做的 Kubernetes </li>
+<li>Rancher | K8S (前端用的是 Web UI，價格較親民) + K3S（比 K8S 更輕量，可用於物聯網。）</li>
+<li>還有很多 K8S 商軟 …等</li>
+</ul>
+</li>
+<li><strong>Self-Hosting Kubernetes</strong><ul>
+<li>自己建置 Kubernetes。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="Kubernetes-Cluster-核心運作"><a href="#Kubernetes-Cluster-核心運作" class="headerlink" title="Kubernetes Cluster 核心運作"></a>Kubernetes Cluster 核心運作</h1><h2 id="Open-Interfaces-in-Kubernetes"><a href="#Open-Interfaces-in-Kubernetes" class="headerlink" title="Open Interfaces in Kubernetes"></a>Open Interfaces in Kubernetes</h2><p><img src="https://i.imgur.com/hG5rPqX.png"></p>
+<ul>
+<li>CRI Container Runtime Interface ， Kubernetes 建置 Container 的標準<ul>
+<li>選用 CRI-O 的原因是因為，CRI-O 為了 K8S 而活，<strong>效能最好</strong>，支援多種 OCI Runtime , 不只有 runC&#x2F;Crun ，還可以選用其他的，相容度很高</li>
+</ul>
+</li>
+<li>CNI Container Network Interface ， 網路的標準<ul>
+<li>讓不同 node 中的 pod 網路可以互通有無，還有讓別人可以透過網路連接到我們建立對外的 Service （ Routing Table and NAT and Iptables ）</li>
+<li>例如 : Flannel 網路套件</li>
+</ul>
+</li>
+<li>CSI Container Storage Interface ， 儲存系統的標準，<ul>
+<li>其實講的就是 Volume ， bypass overlay2，讓 pod 的資料可以達到永存。e.g., Rook、ceph、NFS (Net Work Filesystem)</li>
+</ul>
+</li>
+<li>陳老師建置出來的 K8S CRI 用的是 CRI-O 這個專案，CNI 用的是 Flannel 網路套件，CSI 用的是 NFS<br>以上3種標準會衍生出很多不同的專案，但這些專案都是根據這3種標準做出來的<br>Kuberentes 可以根據不同標準做出不同架構的 Kubernetes</li>
+</ul>
+<blockquote>
+<p>k8s 的 scale out ，自動擴充出分身的 pod ，硬體設備要夠強，不然會有災難。</p>
+</blockquote>
+<hr>
+<h2 id="Kubernetes-Pods-CRI-的規矩"><a href="#Kubernetes-Pods-CRI-的規矩" class="headerlink" title="Kubernetes Pods (CRI 的規矩)"></a>Kubernetes Pods (CRI 的規矩)</h2><p><img src="https://i.imgur.com/CqaHh8u.png"></p>
+<ul>
+<li>pod 不會存在兩個 node 或以上，只會在一個 node 上</li>
+<li>pods 的總記憶體用量為所在的 node 記憶體的總量乘上 80%，保留 20% 給 node 主機作業要使用。</li>
+</ul>
+<hr>
+<h2 id="Kubernetes-Pods-CNI"><a href="#Kubernetes-Pods-CNI" class="headerlink" title="Kubernetes Pods (CNI)"></a>Kubernetes Pods (CNI)</h2><p><img src="https://i.imgur.com/f9hSk3v.png"></p>
+<ul>
+<li>不同 pod 裡的 Container 之間的溝通無法使用 localhost</li>
+<li>一個 pod 會有一個 IP 位址和一片網路卡，裡面的多個 Container 會共用 pod 的網路卡和 IP 位址</li>
+<li>pod 對外有 IP 位址，對內多個 Container 是用 localhost 這個名稱來互通有無 (裡面是記憶體作業)</li>
+</ul>
+<hr>
+<h2 id="Kubernetes-Pods-CSI"><a href="#Kubernetes-Pods-CSI" class="headerlink" title="Kubernetes Pods (CSI)"></a>Kubernetes Pods (CSI)</h2><p><img src="https://i.imgur.com/kqBN7pH.png"></p>
+<ul>
+<li>上圖為 NFS 專案的架構，CSI 還有很多種專案</li>
+<li>Container 使用的 overlay2 檔案系統，如果大量的新增、修改和刪除檔案，檔案系統會掛點，所以他不適合儲存大量的資料。</li>
+<li>pod 可以透過 <code>bypass</code> 跳過 overlay2 檔案系統， 使用 K8S 的 volume 來做儲存，這個 volume 會透過網路連到 NFS 。</li>
+<li>NFS（共享資料夾） 是一台機器(網路儲存設備，e.g., qnap)，把一堆資料夾，透過網路分享給不同的 pod 來使用，如果 NFS 使用的是 linux 系統，那麼 pod 就會用 ext4 檔案系統做儲存</li>
+<li>pod 的 volume 可以連到我們的 big data 的平台 – &gt; ROOK，<ul>
+<li>ROOK ，類似 Hadoop ，他的底層運作和 Hadoop 很像</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Kubernetes-Pods-Scheduling"><a href="#Kubernetes-Pods-Scheduling" class="headerlink" title="Kubernetes Pods (Scheduling)"></a>Kubernetes Pods (Scheduling)</h2><p><img src="https://i.imgur.com/FzVQ9Et.png"></p>
+<ul>
+<li>Scheduler 專門安排 pod 在哪一個 node run，靠的是 Labels (標籤)</li>
+<li>我們的 pod 可以貼 Label ( 標籤 ) ，標籤儲存在資料庫裡面</li>
+<li>Pod 可指定如何佈署到帶有特定 Labels 的  Node</li>
+</ul>
+<hr>
+<h2 id="Kubernetes-Pods-High-Availability"><a href="#Kubernetes-Pods-High-Availability" class="headerlink" title="Kubernetes Pods (High Availability)"></a>Kubernetes Pods (High Availability)</h2><p><img src="https://i.imgur.com/xR2zoMU.png"></p>
+<ul>
+<li>pod 可以有很多本尊和分身，當他們同時在運作時，只要資料的儲存系統做的好（ 像是透過 ROOK ），多個 pod 可以並行運作，可以解決突然在短時間大量連線，造成系統當機的狀況。</li>
+<li>結論：<font color=red><strong>Pod 可輕易做到高可用性 ( HA )</strong></font></li>
+</ul>
+<hr>
+<h2 id="Kubernetes-Master-容錯"><a href="#Kubernetes-Master-容錯" class="headerlink" title="Kubernetes Master 容錯"></a>Kubernetes Master 容錯</h2><p><img src="https://i.imgur.com/G4ySwDN.png"></p>
+<ul>
+<li>在 Kubernetes Master 裡面的 etcd 儲存整個 K8S 的 meta data ， 只要 Master 這台主機掛了， 整個 K8S 再見，所以要做容錯</li>
+<li>多台 Master 主機的 etcd 會自動同步</li>
+<li>根據 Raft 演算法可以算出如何做到 Master 主機的容錯。<ul>
+<li>etcd: 計算故障容許節點數為 (N-1)&#x2F;2，其中 N 為 K8S Master 數量, 而由 (N&#x2F;2)+1 計算出 Majority, 只要滿足這數量, 代表 K8S 可以新增 Service, Deployment 等功能。</li>
+</ul>
+</li>
+<li>當一個 K8S Cluster 只存在 1 台 或 2 台 Master 無法做到容錯。</li>
+<li>3 台 Master 可以允許壞一台 Master 主機， 如果再壞一台，會進入鎖死狀態，代表 Application 可以繼續 run ，但無法新增刪除修改資料。</li>
+<li>如果要壞 2 台 Matser ，必須要有 5 台 Master 主機</li>
+<li>如果只有 3 台實體主機，要如何做到 K8S 的容錯 ?<br>將 3 台實體主機都做成 Master 主機，透過以下命令</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 設定 K8S Master 可以執行 Pod</span><br><span class="line">$ kubectl taint node m1 node-role.kubernetes.io/control-plane:NoSchedule-</span><br><span class="line"></span><br><span class="line">output : </span><br><span class="line">node/m1 untainted</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>讓 master 主機也能 run pod ，但如果要這樣做，一開始在規劃主機的硬體規格時，要盡量規劃強一點。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%B3%BB%E7%B5%B1%E5%B7%A5%E7%A8%8B/" rel="tag"># 系統工程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/Kubernetes-RBAC-Context/" rel="next" title="Kubernetes-RBAC-Context">
+      Kubernetes-RBAC-Context <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-%E6%96%B0%E4%B8%80%E4%BB%A3%E7%9A%84%E9%9B%B2%E7%AB%AF%E4%BD%9C%E6%A5%AD%E7%B3%BB%E7%B5%B1"><span class="nav-number">1.</span> <span class="nav-text">Kubernetes 新一代的雲端作業系統</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-%E7%9B%AE%E6%A8%99"><span class="nav-number">1.1.</span> <span class="nav-text">Kubernetes 目標</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-%E7%9A%84%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%B4%B9"><span class="nav-number">1.2.</span> <span class="nav-text">Kubernetes 的功能介紹</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%B2%E5%8E%9F%E7%94%9F%E4%BD%9C%E6%A5%AD%E7%B3%BB%E7%B5%B1-Kubernetes-%E5%A4%A7%E6%9E%B6%E6%A7%8B"><span class="nav-number">1.3.</span> <span class="nav-text">雲原生作業系統 - Kubernetes 大架構</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Master-node"><span class="nav-number">1.3.1.</span> <span class="nav-text">Master node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Worker-node"><span class="nav-number">1.3.2.</span> <span class="nav-text">Worker node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%83%85%E5%A2%83%E6%95%98%E8%BF%B0"><span class="nav-number">1.3.3.</span> <span class="nav-text">情境敘述</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-CRI-%E7%9A%84%E6%9E%B6%E6%A7%8B%E6%BC%94%E9%80%B2%E5%9C%96"><span class="nav-number">1.4.</span> <span class="nav-text">Kubernetes CRI 的架構演進圖</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%B8%E6%93%87-Kubernetes-Cluster"><span class="nav-number">2.</span> <span class="nav-text">選擇 Kubernetes Cluster</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Managed-Kubernetes-Services"><span class="nav-number">2.1.</span> <span class="nav-text">Managed Kubernetes Services</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-Cluster-%E6%A0%B8%E5%BF%83%E9%81%8B%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">Kubernetes Cluster 核心運作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Open-Interfaces-in-Kubernetes"><span class="nav-number">3.1.</span> <span class="nav-text">Open Interfaces in Kubernetes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-Pods-CRI-%E7%9A%84%E8%A6%8F%E7%9F%A9"><span class="nav-number">3.2.</span> <span class="nav-text">Kubernetes Pods (CRI 的規矩)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-Pods-CNI"><span class="nav-number">3.3.</span> <span class="nav-text">Kubernetes Pods (CNI)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-Pods-CSI"><span class="nav-number">3.4.</span> <span class="nav-text">Kubernetes Pods (CSI)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-Pods-Scheduling"><span class="nav-number">3.5.</span> <span class="nav-text">Kubernetes Pods (Scheduling)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-Pods-High-Availability"><span class="nav-number">3.6.</span> <span class="nav-text">Kubernetes Pods (High Availability)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kubernetes-Master-%E5%AE%B9%E9%8C%AF"><span class="nav-number">3.7.</span> <span class="nav-text">Kubernetes Master 容錯</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Antony Cehn</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Antony.Chen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
